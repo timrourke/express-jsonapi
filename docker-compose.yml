@@ -1,0 +1,17 @@
+version: '2'
+
+services:  
+  server: 
+    build: server
+    ports: 
+      - "3000:3000"
+    links: 
+      - mysql:mysql 
+
+  mysql: 
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: 123456
+      MYSQL_DATABASE: jsonapi

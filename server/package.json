@@ -1,0 +1,24 @@
+{
+  "name": "jsonapi",
+  "version": "1.0.0",
+  "description": "An ExpressJS API implementing the JSON API specification",
+  "main": "server.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timrourke/jsonapi.git"
+  },
+  "author": {
+    "name": "Tim Rourke",
+    "email": "tim@timrourke.com",
+    "url": "https://timrourke.com"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.15.2",
+    "mysql": "^2.13.0",
+    "sequelize": "^3.30.3"
+  }
+}
