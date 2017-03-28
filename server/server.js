@@ -11,6 +11,8 @@ const JsonApiResourceObject = require('./jsonapi/ResourceObject');
 const JsonApiResourceObjectLinks = require('./jsonapi/ResourceObjectLinks');
 const UserController = require('./controllers/user');
 const NotFoundError = require('./jsonapi/errors/NotFoundError');
+const InternalServerError = require('./jsonapi/errors/InternalServerError');
+const BadRequest = require('./jsonapi/errors/BadRequest');
 
 const User = require('./models/User')(db);
 
@@ -27,15 +29,11 @@ function logErrors(err, req, res, next) {
 }
 
 function clientErrorHandler(err, req, res, next) {
-  if (req.xhr) {
-    res.status(500).json({ error: 'Something failed!' });
-  } else {
-    next(err);
-  }
-}
-
-function errorHandler(err, req, res, next) {
-  res.status(500).json({'error': { error: err.message }});
+  res.status(500).json({
+    errors: [
+      new InternalServerError()
+    ]
+  });
 }
 
 // Middleware
@@ -55,9 +53,30 @@ app.get('/health', function (req, res) {
 });
 
 app.use(function(req, res, next) {
-  let contentType = req.get('content-type');
-  if (contentType !== 'application/vnd.api+json') {
-    return next(new Error(`Client request contained invalid header for "Content-Type": ${contentType}`));
+  let contentType = (req.get('content-type') || '').trim();
+  let expected = 'application/vnd.api+json';
+
+  if (contentType.indexOf(expected) !== -1 && contentType !== expected) {
+    return res.status(415).json({
+      errors: [
+        status: 415,
+        title: 'Unsupported Media Type',
+        detail: `Media type parameters or modifications to JSON API Content-Type header not supported ("${contentType}")`,
+        links: {
+          about: 'http://jsonapi.org/format/#content-negotiation-clients'
+        }
+      ]
+    });
+  } else if (contentType !== expected) {
+    let error = new BadRequest(`Unsupported value for Content-Type header ("${contentType}")`);
+
+    error.links = {
+      about: 'http://jsonapi.org/format/#content-negotiation-clients'
+    };
+
+    return res.status(400).json({
+      errors: [error]
+    });
   }
 
   next();
@@ -161,7 +180,6 @@ app.delete('/api/users/:id', function(req, res, next) {
 
 app.use(logErrors);
 app.use(clientErrorHandler);
-app.use(errorHandler);
 
 app.listen(PORT);
 console.log('Running on http://localhost:' + PORT);
