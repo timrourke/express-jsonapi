@@ -75,8 +75,6 @@ app.get('/api/users/:id', function(req, res, next) {
   let controller = new UserController(Models.User);
 
   controller.getOne(req.params.id).then(user => {
-    debugger;
-
     if (!user) {
       return res.status(404).json({
         data: null,
