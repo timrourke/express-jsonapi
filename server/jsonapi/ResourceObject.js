@@ -2,6 +2,7 @@
 
 const inflection = require('inflection');
 const StringUtils = require('./../utils/String');
+const RelationshipLink = require('./RelationshipLink');
 
 class ResourceObject {
 
@@ -54,10 +55,7 @@ class ResourceObject {
 
     relationships.forEach(rel => {
       json.relationships[rel] = {
-        links: {
-          self: `/${type}/${id}/relationships/${rel}`,
-          related: `/${type}/${id}/${rel}`
-        }
+        links: new RelationshipLink(type, id, rel)
       };
     });
   }

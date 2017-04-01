@@ -88,6 +88,14 @@ describe('users', () => {
                 'password-hash': 'fake hash',
                 'created-at': referenceDate.toJSON(),
                 'updated-at': referenceDate.toJSON()
+              },
+              relationships: {
+                posts: {
+                  links: {
+                    self: 'http://localhost:3000/api/users/1/relationships/posts',
+                    related: 'http://localhost:3000/api/users/1/posts'
+                  }
+                }
               }
             },
             links: {
