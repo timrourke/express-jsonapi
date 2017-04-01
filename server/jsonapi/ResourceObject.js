@@ -36,22 +36,57 @@ class ResourceObject {
   }
 
   /**
+   * Serialize the model's relationships
+   *
+   * @param {Object} json The object to serialize as JSON
+   * @param {String} type The model's JSON API type
+   * @param {String} id The model instance's ID
+   * @param {Object} associations The associations for the model
+   */
+  serializeRelationships(json, type, id, associations) {
+    let relationships = Object.keys(associations);
+
+    if (!relationships.length) {
+      return;
+    }
+
+    json.relationships = {};
+
+    relationships.forEach(rel => {
+      json.relationships[rel] = {
+        links: {
+          self: `/${type}/${id}/relationships/${rel}`,
+          related: `/${type}/${id}/${rel}`
+        }
+      };
+    });
+  }
+
+  /**
    * Serialize this model instance to JSON API-compliant POJO
    *
    * @return {Object}
    */
   toJSON() {
+    let model = this.modelInstance.Model;
+
     let type = inflection.pluralize(
-      StringUtils.convertCamelToDasherized(this.modelInstance.Model.name)
+      StringUtils.convertCamelToDasherized(model.name)
     );
 
-    let ret = {
+    let id = String(this.modelInstance.id);
+
+    let json = {
       type: inflection.pluralize(type),
-      id: String(this.modelInstance.id),
+      id: id,
       attributes: this.serializeAttributes(this.modelInstance.attributes),
     };
 
-    return ret;
+    if (model.hasOwnProperty('associations')) {
+      this.serializeRelationships(json, type, id, model.associations);
+    }
+
+    return json;
   }
 
 }
