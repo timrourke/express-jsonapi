@@ -14,7 +14,8 @@ const NotFoundError = require('./jsonapi/errors/NotFoundError');
 const InternalServerError = require('./jsonapi/errors/InternalServerError');
 const JsonApiMiddlewareValidateContentType = require('./jsonapi/middleware/validate-content-type');
 
-const User = require('./models/User')(db);
+const defineModels = require('./models/models');
+const Models = defineModels(db);
 
 // Constants
 const PORT = 3000;
@@ -52,10 +53,11 @@ app.get('/health', function (req, res) {
   res.send('Up.');
 });
 
+// Validate `Content-Type` request header
 app.use(JsonApiMiddlewareValidateContentType);
 
 app.get('/api/users', function(req, res, next) {
-  let controller = new UserController(User);
+  let controller = new UserController(Models.User);
 
   controller.getList(req.params).then(users => {
     res.json({
@@ -70,9 +72,11 @@ app.get('/api/users', function(req, res, next) {
 });
 
 app.get('/api/users/:id', function(req, res, next) {
-  let controller = new UserController(User);
+  let controller = new UserController(Models.User);
 
   controller.getOne(req.params.id).then(user => {
+    debugger;
+
     if (!user) {
       return res.status(404).json({
         data: null,
@@ -92,7 +96,7 @@ app.get('/api/users/:id', function(req, res, next) {
 });
 
 app.post('/api/users', function(req, res, next) {
-  let controller = new UserController(User);
+  let controller = new UserController(Models.User);
   const attrs = req.body.data.attributes;
 
   controller.createOne(attrs).then(user => {
@@ -109,7 +113,7 @@ app.post('/api/users', function(req, res, next) {
 });
 
 app.patch('/api/users/:id', function(req, res, next) {
-  let controller = new UserController(User);
+  let controller = new UserController(Models.User);
   const attrs = req.body.data.attributes;
 
   controller.updateOne(req.params.id, attrs).then(updatedUser => {
@@ -132,7 +136,7 @@ app.patch('/api/users/:id', function(req, res, next) {
 });
 
 app.delete('/api/users/:id', function(req, res, next) {
-  let controller = new UserController(User);
+  let controller = new UserController(Models.User);
 
   controller.deleteOne(req.params.id).then(deletedUser => {
     if (!deletedUser) {
@@ -161,6 +165,7 @@ module.exports = {
   app: app,
   db: db,
   models: {
-    user: User
+    user: Models.User,
+    post: Models.Post
   }
 };
