@@ -13,6 +13,8 @@ const UserController = require('./controllers/user');
 const NotFoundError = require('./jsonapi/errors/NotFoundError');
 const InternalServerError = require('./jsonapi/errors/InternalServerError');
 const JsonApiMiddlewareValidateContentType = require('./jsonapi/middleware/validate-content-type');
+const JsonApiExtractIncludedModelsAsFlatArray = require('./jsonapi/extract-included-models-as-flat-array');
+const GetListRequest = require('./jsonapi/GetListRequest');
 
 const defineModels = require('./models/models');
 const Models = defineModels(db);
@@ -24,8 +26,15 @@ const PORT = 3000;
 const app = express();
 
 function logErrors(err, req, res, next) {
-  console.error(err.message);
-  console.error(err.stack);
+  if (Array.isArray(err)) {
+    err.forEach(error => {
+      console.error(error.message);
+      console.error(error.stack);
+    });
+  } else {
+    console.error(err.message);
+    console.error(err.stack);
+  }
   next(err);
 }
 
@@ -58,16 +67,33 @@ app.use(JsonApiMiddlewareValidateContentType);
 
 app.get('/api/users', function(req, res, next) {
   let controller = new UserController(Models.User);
+  let request = new GetListRequest(req, Models.User);
 
-  controller.getList(req.params).then(users => {
-    res.json({
-      links: {
-        self: 'http://localhost:3000/api/users'
-      },
-      data: users.map(user => new JsonApiResourceObject(user))
+  request.validate().then(sequelizeQueryParams => {
+    controller.getList(sequelizeQueryParams).then(users => {
+      let json = {
+        links: {
+          self: 'http://localhost:3000/api/users'
+        },
+        data: users.map(user => new JsonApiResourceObject(user))
+      };
+
+      let included = [];
+
+      JsonApiExtractIncludedModelsAsFlatArray(users, included);
+
+      if (included.length) {
+        json.included = included.map(model => new JsonApiResourceObject(model));
+      }
+
+      res.json(json);
+    }).catch(err => {
+      next(err);
     });
-  }).catch(err => {
-    next(err);
+  }).catch(errors => {
+    res.status(400).json({
+      errors: errors
+    });
   });
 });
 

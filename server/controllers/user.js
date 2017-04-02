@@ -32,11 +32,12 @@ class UserController {
   /**
    * Get a list of model instances
    *
+   * @param {Object} sequelizeQueryParams The query params to pass to the query builder
    * @return {Promise}
    */
-  getList() {
+  getList(sequelizeQueryParams = {}) {
     return new Promise((resolve, reject) => {
-      this.model.findAll().then(foundModels => {
+      this.model.findAll(sequelizeQueryParams).then(foundModels => {
         resolve(foundModels);
       }).catch(function() {
         reject(arguments);
@@ -52,8 +53,8 @@ class UserController {
    */
   createOne(attrs) {
     return new Promise((resolve, reject) => {
-      this.model.create(attrs).then(user => {
-        resolve(user);
+      this.model.create(attrs).then(newModel => {
+        resolve(newModel);
       }).catch(function() {
         reject(arguments);
       });
@@ -70,8 +71,8 @@ class UserController {
    */
   updateOne(id, attrs) {
     return new Promise((resolve, reject) => {
-      this.model.findById(id).then(user => {
-        if (!user) {
+      this.model.findById(id).then(foundModel => {
+        if (!foundModel) {
           return resolve(null);
         }
 
@@ -83,8 +84,8 @@ class UserController {
           newAttrs[camelCaseKey] = attrs[keyName];
         });
 
-        user.update(newAttrs).then(updatedUser => {
-          resolve(updatedUser);
+        foundModel.update(newAttrs).then(updatedModel => {
+          resolve(updatedModel);
         }).catch(function() {
           reject(arguments);
         });
@@ -103,13 +104,13 @@ class UserController {
    */
   deleteOne(id) {
     return new Promise((resolve, reject) => {
-      this.model.findById(id).then(user => {
-        if (!user) {
+      this.model.findById(id).then(foundModel => {
+        if (!foundModel) {
           return resolve(null);
         }
 
-        user.destroy().then(() => {
-          resolve(user);
+        foundModel.destroy().then(() => {
+          resolve(foundModel);
         }).catch(function() {
           reject(arguments);
         });

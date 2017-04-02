@@ -10,7 +10,7 @@ const GetListRequest = require('./../../jsonapi/GetListRequest');
  * @return {Object}
  */
 function RequestStub() {
-  this.params = {
+  this.query= {
     include: 'foo,bar,foo.bingo,foo.bongo.ding,foo.bongo.dang,bar.toot,foo.bongo.ding.ring,foo.bongo.ding.rang'
   };
 };

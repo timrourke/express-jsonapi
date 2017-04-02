@@ -23,13 +23,22 @@ class ResourceObject {
    */
   serializeAttributes(attributes) {
     let serializedAttributes = {};
+    let instance = this.modelInstance;
 
     attributes
       .map(attr => StringUtils.convertCamelToDasherized(attr))
       .forEach((newKeyName, index) => {
         if (newKeyName !== 'id') {
-          let originalKeyName = this.modelInstance.attributes[index];
-          serializedAttributes[newKeyName] = this.modelInstance.get(originalKeyName);
+          let originalKeyName = instance.attributes[index];
+          let value = instance.get(originalKeyName);
+          let foreignKey = newKeyName.match(/([\w]+)-id/);
+
+          if (foreignKey &&
+              instance.Model.associations.hasOwnProperty(foreignKey[1])) {
+            serializedAttributes[foreignKey[1]] = String(value);
+          } else {
+            serializedAttributes[newKeyName] = value;
+          }
         }
       });
 

@@ -14,7 +14,10 @@ describe('users', () => {
   beforeEach((done) => {
     fakeClock = sinon.useFakeTimers();
 
-    server.db.query('TRUNCATE users').then(() => done());
+    Promise.all([
+      server.db.query('TRUNCATE users'),
+      server.db.query('TRUNCATE posts')
+    ]).then(() => done());
   });
 
   afterEach(() => {
@@ -34,6 +37,72 @@ describe('users', () => {
             },
             data: []
           });
+
+          done();
+        });
+    });
+
+    it('should return an array of users', (done) => {
+      server.models.user.create({
+        firstName: 'Jane',
+        lastName: 'Wiggins',
+        email: 'tacobellemployee2@example.com',
+        passwordHash: 'fake hash'
+      });
+
+      server.models.user.create({
+        firstName: 'Richard',
+        lastName: 'Smith',
+        email: 'rsmith4@example.com',
+        passwordHash: 'fake hash'
+      });
+
+      chai.request(server.app)
+        .get('/api/users')
+        .set('Content-Type', 'application/vnd.api+json')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.data.length.should.be.eql(2);
+          res.body.data[0].type.should.be.eql('users');
+          res.body.data[0].id.should.be.eql('1');
+          res.body.data[1].type.should.be.eql('users');
+          res.body.data[1].id.should.be.eql('2');
+
+          done();
+        });
+    });
+
+    it('should sideload related posts', (done) => {
+      server.models.user.create({
+        firstName: 'Jane',
+        lastName: 'Wiggins',
+        email: 'tacobellemployee2@example.com',
+        passwordHash: 'fake hash'
+      });
+
+      server.models.post.create({
+        body: 'This is a test 1.',
+        userId: '1'
+      });
+
+      server.models.post.create({
+        body: 'This is a test 2.',
+        userId: '1'
+      });
+
+      chai.request(server.app)
+        .get('/api/users?include=posts')
+        .set('Content-Type', 'application/vnd.api+json')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.data.length.should.be.eql(1);
+          res.body.data[0].type.should.be.eql('users');
+          res.body.data[0].id.should.be.eql('1');
+          res.body.included.length.should.be.eql(2);
+          res.body.included[0].type.should.be.eql('posts');
+          res.body.included[1].type.should.be.eql('posts');
+          res.body.included[0].id.should.be.eql('1');
+          res.body.included[1].id.should.be.eql('2');
 
           done();
         });
