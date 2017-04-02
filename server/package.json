@@ -14,7 +14,8 @@
     "url": "https://timrourke.com"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "NODE_ENV=test node_modules/.bin/mocha"
   },
   "dependencies": {
     "body-parser": "^1.17.1",
