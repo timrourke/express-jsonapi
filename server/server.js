@@ -70,17 +70,17 @@ app.get('/api/users', function(req, res, next) {
   let request = new GetListRequest(req, Models.User);
 
   request.validate().then(sequelizeQueryParams => {
-    controller.getList(sequelizeQueryParams).then(users => {
+    controller.getList(sequelizeQueryParams).then(foundModels => {
       let json = {
         links: {
           self: 'http://localhost:3000/api/users'
         },
-        data: users.map(user => new JsonApiResourceObject(user))
+        data: foundModels.map(model => new JsonApiResourceObject(model))
       };
 
       let included = [];
 
-      JsonApiExtractIncludedModelsAsFlatArray(users, included);
+      JsonApiExtractIncludedModelsAsFlatArray(foundModels, included);
 
       if (included.length) {
         json.included = included.map(model => new JsonApiResourceObject(model));
@@ -100,8 +100,8 @@ app.get('/api/users', function(req, res, next) {
 app.get('/api/users/:id', function(req, res, next) {
   let controller = new UserController(Models.User);
 
-  controller.getOne(req.params.id).then(user => {
-    if (!user) {
+  controller.getOne(req.params.id).then(foundModel => {
+    if (!foundModel) {
       return res.status(404).json({
         data: null,
         errors: [
@@ -111,8 +111,8 @@ app.get('/api/users/:id', function(req, res, next) {
     }
 
     res.json({
-      links: new JsonApiResourceObjectLinks(user),
-      data: new JsonApiResourceObject(user)
+      links: new JsonApiResourceObjectLinks(foundModel),
+      data: new JsonApiResourceObject(foundModel)
     });
   }).catch(err => {
     next(err);
@@ -123,12 +123,12 @@ app.post('/api/users', function(req, res, next) {
   let controller = new UserController(Models.User);
   const attrs = req.body.data.attributes;
 
-  controller.createOne(attrs).then(user => {
+  controller.createOne(attrs).then(foundModel => {
     res.json({
-      links: new JsonApiResourceObjectLinks(user),
+      links: new JsonApiResourceObjectLinks(foundModel),
       data: {
         type: 'users',
-        attributes: user
+        attributes: foundModel
       }
     });
   }).catch(err => {
@@ -140,8 +140,8 @@ app.patch('/api/users/:id', function(req, res, next) {
   let controller = new UserController(Models.User);
   const attrs = req.body.data.attributes;
 
-  controller.updateOne(req.params.id, attrs).then(updatedUser => {
-    if (!updatedUser) {
+  controller.updateOne(req.params.id, attrs).then(updatedModel => {
+    if (!updatedModel) {
       return res.status(404).json({
         data: null,
         errors: [
@@ -151,8 +151,8 @@ app.patch('/api/users/:id', function(req, res, next) {
     }
 
     res.json({
-      links: new JsonApiResourceObjectLinks(updatedUser),
-      data: new JsonApiResourceObject(updatedUser)
+      links: new JsonApiResourceObjectLinks(updatedModel),
+      data: new JsonApiResourceObject(updatedModel)
     });
   }).catch(err => {
     next(err);
@@ -162,8 +162,8 @@ app.patch('/api/users/:id', function(req, res, next) {
 app.delete('/api/users/:id', function(req, res, next) {
   let controller = new UserController(Models.User);
 
-  controller.deleteOne(req.params.id).then(deletedUser => {
-    if (!deletedUser) {
+  controller.deleteOne(req.params.id).then(deletedModel => {
+    if (!deletedModel) {
       return res.status(404).json({
         data: null,
         errors: [
