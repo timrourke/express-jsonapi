@@ -3,7 +3,13 @@
 const UserAttrs = require('./User');
 const PostAttrs = require('./Post');
 
-module.exports = (sequelize) => {
+/**
+ * Define the models and their relationships and return them as a hash
+ *
+ * @param {Sequelize.Sequelize} sequelize The Sequelize instance
+ * @return {Object}
+ */
+function defineModels(sequelize) {
   // Define the models
   const User = sequelize.define('user', UserAttrs);
   const Post = sequelize.define('post', PostAttrs);
@@ -14,6 +20,8 @@ module.exports = (sequelize) => {
 
   return {
     User: User,
-    Post: Post
+    Post: Post,
   };
 }
+
+module.exports = defineModels;
