@@ -1,9 +1,11 @@
+'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../server');
-const should = chai.should();
+chai.should();
 const sinon = require('sinon');
 
 chai.use(chaiHttp);
@@ -121,7 +123,7 @@ describe('users', () => {
             errors: [{
               status: 404,
               title: 'Not Found',
-              detail: 'No user found with the id of 1'
+              detail: 'No users found with the id of 1'
             }]
           });
 
@@ -228,7 +230,7 @@ describe('users', () => {
             errors: [{
               status: 404,
               title: 'Not Found',
-              detail: 'No user found with the id of 1'
+              detail: 'No users found with the id of 1'
             }]
           });
 
@@ -282,7 +284,7 @@ describe('users', () => {
             errors: [{
               status: 404,
               title: 'Not Found',
-              detail: 'No user found with the id of 1'
+              detail: 'No users found with the id of 1'
             }]
           });
 
