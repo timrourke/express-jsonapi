@@ -2,7 +2,7 @@
 
 const StringUtils = require('./../utils/String');
 
-class UserController {
+class Controller {
 
   /**
    * Constructor.
@@ -122,4 +122,4 @@ class UserController {
 
 }
 
-module.exports = UserController;
+module.exports = Controller;

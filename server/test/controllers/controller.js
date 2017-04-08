@@ -1,8 +1,10 @@
+'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const should = chai.should();
-const UserController = require('./../../controllers/user');
+chai.should();
+const Controller = require('./../../controllers/controller');
 
 /**
  * Stub for Sequelize.Instance
@@ -29,12 +31,12 @@ class ModelInstanceStub {
   destroy() {
     return Promise.resolve();
   }
-};
+}
 
-describe('controllers/users', () => {
+describe('controllers/controller', () => {
   describe('#getOne()', () => {
     it('should return a promise', (done) => {
-      let controller = new UserController(new ModelInstanceStub());
+      let controller = new Controller(new ModelInstanceStub());
       let result = controller.getOne();
 
       result.should.be.instanceof(Promise);
@@ -48,7 +50,7 @@ describe('controllers/users', () => {
 
   describe('#getList()', () => {
     it('should return a promise', (done) => {
-      let controller = new UserController(new ModelInstanceStub());
+      let controller = new Controller(new ModelInstanceStub());
       let result = controller.getList();
 
       result.should.be.instanceof(Promise);
@@ -62,7 +64,7 @@ describe('controllers/users', () => {
 
   describe('#createOne()', () => {
     it('should return a promise', (done) => {
-      let controller = new UserController(new ModelInstanceStub());
+      let controller = new Controller(new ModelInstanceStub());
       let result = controller.createOne();
 
       result.should.be.instanceof(Promise);
@@ -76,7 +78,7 @@ describe('controllers/users', () => {
 
   describe('#updateOne()', () => {
     it('should return a promise', (done) => {
-      let controller = new UserController(new ModelInstanceStub());
+      let controller = new Controller(new ModelInstanceStub());
       let result = controller.updateOne();
 
       result.should.be.instanceof(Promise);
@@ -90,7 +92,7 @@ describe('controllers/users', () => {
 
   describe('#deleteOne()', () => {
     it('should return a promise', (done) => {
-      let controller = new UserController(new ModelInstanceStub());
+      let controller = new Controller(new ModelInstanceStub());
       let result = controller.deleteOne();
 
       result.should.be.instanceof(Promise);
