@@ -3,27 +3,6 @@
 const BadRequest = require('./errors/BadRequest');
 
 /**
- * Parse the params.
- *
- * Parses a params object and builds the required data structures to respond to
- * a JSON API-compliant request.
- *
- * Will parse params for the following JSON API request params:
- *   - include
- *   - fields
- *   - sort
- *   - page[number], page[size], page[offset], page[limit]
- *   - filter
- *
- * @see http://jsonapi.org/format/#fetching
- *
- * @param {Object} params Params to parse
- */
-function parseJsonApiRequestParams(params) {
-  this.includes = parseInclude(params.include);
-}
-
-/**
  * Parses the JSON API include param and builds a multidimensional graph of
  * relationships.
  *
@@ -64,7 +43,7 @@ function parseInclude(includeParam = "") {
   flatIncludesArray.forEach(includesArray => {
     let branch = includesTree;
 
-    includesArray.forEach((include, index) => {
+    includesArray.forEach(include => {
       if (branch[include] && Object.keys(branch[include]).length) {
         branch[include] = Object.assign({}, branch[include]);
       } else {
@@ -79,10 +58,10 @@ function parseInclude(includeParam = "") {
 }
 
 class GetListRequest {
-
   /**
    * Constructor.
    *
+   * @constructor
    * @param {Express.Request} req Express request object
    * @param {Sequelize.Model} model The Sequelize model definition
    */
@@ -91,7 +70,7 @@ class GetListRequest {
       req.query :
       {};
 
-    parseJsonApiRequestParams.call(this, queryParams);
+    this.includes = parseInclude(queryParams.include);
 
     this.model = model;
   }
