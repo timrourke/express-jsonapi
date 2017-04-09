@@ -67,7 +67,10 @@ class Route {
 
       this.app.get(`/api/${this.modelType}/:id/:relationship`, (req, res) => {
         res.status(404).json({
-          errors: new NotFoundError(`The relationship "${req.params.relationship}" does not exist for ${this.modelType}`)
+          errors: [
+            new NotFoundError(`The relationship "${req.params.relationship}" \
+does not exist for ${this.modelType}`)
+          ]
         });
       });
     });
