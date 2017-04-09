@@ -14,7 +14,7 @@ const JsonApiMiddlewareValidateContentType = require('./jsonapi/middleware/valid
 const defineModels = require('./models/models');
 const Models = defineModels(db);
 
-const createRoute = require('./route/route');
+const Route = require('./route/route');
 
 // Constants
 const PORT = 3000;
@@ -35,13 +35,15 @@ function logErrors(err, req, res, next) {
   next(err);
 }
 
-function clientErrorHandler(err, req, res) {
+function clientErrorHandler(err, req, res, next) {
   res.status(500).json({
     errors: [
       new InternalServerError()
     ]
   });
 }
+
+
 
 // Middleware
 app.use(helmet());
@@ -63,9 +65,12 @@ app.get('/health', function (req, res) {
 app.use(JsonApiMiddlewareValidateContentType);
 
 
-// build routes here
-createRoute(app, Models.User, Controller);
+// build routes
+let UserRoute = new Route(app, Models.User, Controller);
+let PostRoute = new Route(app, Models.Post, Controller);
 
+UserRoute.initialize();
+PostRoute.initialize();
 
 app.use(logErrors);
 app.use(clientErrorHandler);
