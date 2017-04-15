@@ -35,7 +35,7 @@ function logErrors(err, req, res, next) {
   next(err);
 }
 
-function clientErrorHandler(err, req, res, next) {
+function clientErrorHandler(err, req, res) {
   res.status(500).json({
     errors: [
       new InternalServerError()
