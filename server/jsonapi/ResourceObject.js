@@ -16,7 +16,7 @@ class ResourceObject {
   }
 
   /**
-   * Serialize the model instance's attributes
+   * Serialize the model instance's attributes, excluding the model's ID.
    *
    * @param {Array} attributes
    * @return {Object}
@@ -24,21 +24,21 @@ class ResourceObject {
   serializeAttributes(attributes) {
     let serializedAttributes = {};
     let instance = this.modelInstance;
+    let originalAttrs = instance.attributes.filter(attr => attr !== 'id');
 
     attributes
       .map(attr => StringUtils.convertCamelToDasherized(attr))
+      .filter(attr => attr !== 'id')
       .forEach((newKeyName, index) => {
-        if (newKeyName !== 'id') {
-          let originalKeyName = instance.attributes[index];
-          let value = instance.get(originalKeyName);
-          let foreignKey = newKeyName.match(/([\w]+)-id/);
+        let originalKeyName = originalAttrs[index];
+        let value = instance.get(originalKeyName);
+        let foreignKey = newKeyName.match(/([\w]+)-id/);
 
-          if (foreignKey &&
-              instance.Model.associations.hasOwnProperty(foreignKey[1])) {
-            serializedAttributes[foreignKey[1]] = String(value);
-          } else {
-            serializedAttributes[newKeyName] = value;
-          }
+        if (foreignKey &&
+            instance.Model.associations.hasOwnProperty(foreignKey[1])) {
+          serializedAttributes[foreignKey[1]] = String(value);
+        } else {
+          serializedAttributes[newKeyName] = value;
         }
       });
 
