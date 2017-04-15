@@ -7,6 +7,7 @@ const chaiHttp = require('chai-http');
 const server = require('../server');
 chai.should();
 const sinon = require('sinon');
+const Factory = require('./../factories/all');
 
 chai.use(chaiHttp);
 
@@ -45,18 +46,10 @@ describe('users', () => {
     });
 
     it('should return an array of users', (done) => {
-      server.models.user.create({
-        firstName: 'Jane',
-        lastName: 'Wiggins',
-        email: 'tacobellemployee2@example.com',
-        passwordHash: 'fake hash'
-      });
+      let users = Factory.buildList('user', 2);
 
-      server.models.user.create({
-        firstName: 'Richard',
-        lastName: 'Smith',
-        email: 'rsmith4@example.com',
-        passwordHash: 'fake hash'
+      users.forEach(user => {
+        server.models.user.create(user);
       });
 
       chai.request(server.app)
@@ -66,30 +59,20 @@ describe('users', () => {
           res.should.have.status(200);
           res.body.data.length.should.be.eql(2);
           res.body.data[0].type.should.be.eql('users');
-          res.body.data[0].id.should.be.eql('1');
           res.body.data[1].type.should.be.eql('users');
-          res.body.data[1].id.should.be.eql('2');
 
           done();
         });
     });
 
     it('should sideload related posts', (done) => {
-      server.models.user.create({
-        firstName: 'Jane',
-        lastName: 'Wiggins',
-        email: 'tacobellemployee2@example.com',
-        passwordHash: 'fake hash'
-      });
+      let user = Factory.build('user', { id: 1 });
+      server.models.user.create(user);
 
-      server.models.post.create({
-        body: 'This is a test 1.',
-        userId: '1'
-      });
-
-      server.models.post.create({
-        body: 'This is a test 2.',
-        userId: '1'
+      Factory.buildList('post', 2).forEach((post, index) => {
+        post.id = index + 1;
+        post.userId = 1;
+        server.models.post.create(post);
       });
 
       chai.request(server.app)
@@ -200,8 +183,8 @@ describe('users', () => {
           res.should.have.status(200);
           res.body.data.type.should.be.eql('users');
           attrs.email.should.be.eql('tim.smith@example.com');
-          attrs.firstName.should.be.eql('Tim');
-          attrs.lastName.should.be.eql('Smith');
+          attrs['first-name'].should.be.eql('Tim');
+          attrs['last-name'].should.be.eql('Smith');
 
           done();
         });

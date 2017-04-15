@@ -65,7 +65,7 @@ class Route {
         _this.handleRelatedGetListRequest(relationship, relatedPathSegment, ...arguments);
       });
 
-      this.app.get(`/api/${this.modelType}/:id/:relationship`, (req, res) => {
+      this.app.all(`/api/${this.modelType}/:id/:relationship`, (req, res) => {
         res.status(404).json({
           errors: [
             new NotFoundError(`The relationship "${req.params.relationship}" \
@@ -200,13 +200,10 @@ does not exist for ${this.modelType}`)
     let controller = new this.controllerClass(this.model);
     const attrs = req.body.data.attributes;
 
-    controller.createOne(attrs).then(foundModel => {
+    controller.createOne(attrs).then(newModel => {
       res.json({
-        links: new JsonApiResourceObjectLinks(foundModel),
-        data: {
-          type: this.modelType,
-          attributes: foundModel
-        }
+        links: new JsonApiResourceObjectLinks(newModel),
+        data: new JsonApiResourceObject(newModel)
       });
     }).catch(err => {
       next(err, req, res, next);
