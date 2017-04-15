@@ -161,7 +161,7 @@ class GetListRequest {
 
     this.sequelizeQueryParams = {};
 
-    this.includes = parseInclude(queryParams.include);
+    this.include = parseInclude(queryParams.include);
 
     this.pagination = parsePagination(queryParams);
 
@@ -193,16 +193,12 @@ class GetListRequest {
    * @return {Array} Array of errors, if any
    */
   validateIncludes() {
-    if (!Object.keys(this.includes)) {
-      return [];
-    }
-
     let errors = [];
 
-    Object.assign(this.sequelizeQueryParams, { includes: [] });
+    Object.assign(this.sequelizeQueryParams, { include: [] });
 
     validateSingleInclude(
-      this.includes,
+      this.include,
       this.model,
       this.sequelizeQueryParams,
       errors
