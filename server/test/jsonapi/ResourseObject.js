@@ -33,7 +33,7 @@ function ModelInstanceStub() {
       'baz': {}
     }
   };
-};
+}
 
 describe('jsonapi/ResourceObject', () => {
   describe('#toJSON()', () => {
