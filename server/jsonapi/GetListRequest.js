@@ -57,6 +57,93 @@ function parseInclude(includeParam = "") {
   return includesTree;
 }
 
+/**
+ * Parse the query params for pagination
+ *
+ * @param {Object} queryParams Request query params
+ * @return {Object}
+ */
+function parsePagination(queryParams) {
+  if (!queryParams.hasOwnProperty('page')) {
+    return {
+      offset: 0,
+      limit: 20
+    };
+  }
+
+  return queryParams.page;
+}
+
+/**
+ * Build a BadRequest error for invalid pagination params, when the mutually
+ * exclusive params "page[offset]" and "page[number]" are both defined.
+ *
+ * @return {BadRequest}
+ */
+function buildPaginationErrHasOffsetAndNumber() {
+  let msg = `Invalid pagination strategy. Use of "page[number]" and "page[offset]" \
+as pagination params are mutually exclusive. Please use one or the other.`;
+  let error = new BadRequest(msg);
+
+  error.setSource('page');
+
+  return error;
+}
+
+/**
+ * Build a BadRequest error for invalid pagination params, when the mutually
+ * exclusive params "page[limit]" and "page[size]" are both defined.
+ *
+ * @return {BadRequest}
+ */
+function buildPaginationErrHasLimitAndSize() {
+  let msg = `Invalid pagination strategy. Use of "page[limit]" and "page[size]" \
+as pagination params are mutually exclusive. Please use one or the other.`;
+  let error = new BadRequest(msg);
+
+  error.setSource('page');
+
+  return error;
+}
+
+/**
+ * Build a BadRequest error for invalid pagination params, when a pagination
+ * param is not a number.
+ *
+ * @param {String} pageParam The query param that is invalid
+ * @param {Mixed} invalidValue The invalid value for the invalid query param
+ * @return {BadRequest}
+ */
+function buildPaginationErrIsNaN(pageParam, invalidValue) {
+  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). \
+"page[${pageParam}]" must be a number.`;
+  let error = new BadRequest(msg);
+
+  error.setSource(`page[${pageParam}]`);
+
+  return error;
+}
+
+
+/**
+ * Build a BadRequest error for invalid pagination params, when a pagination
+ * param is lower than the minimum required number.
+ *
+ * @param {String} pageParam The query param that is invalid
+ * @param {Mixed} invalidValue The invalid value for the invalid query param
+ * @param {String} minimum The string describing the minimum required number
+ * @return {BadRequest}
+ */
+function buildPaginationErrOffsetLessThanMin(pageParam, invalidValue, minimum) {
+  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). \
+"page[${pageParam}]" must not be a number lower than ${minimum}.`;
+  let error = new BadRequest(msg);
+
+  error.setSource(`page[${pageParam}]`);
+
+  return error;
+}
+
 class GetListRequest {
   /**
    * Constructor.
@@ -70,7 +157,13 @@ class GetListRequest {
       req.query :
       {};
 
+    this.errors = [];
+
+    this.sequelizeQueryParams = {};
+
     this.includes = parseInclude(queryParams.include);
+
+    this.pagination = parsePagination(queryParams);
 
     this.model = model;
   }
@@ -82,14 +175,14 @@ class GetListRequest {
    */
   validate() {
     return new Promise((resolve, reject) => {
-      let errors = [];
+      this.errors = this.errors.concat(this.validateIncludes());
 
-      errors = errors.concat(this.validateIncludes());
+      this.errors = this.errors.concat(this.validatePagination());
 
-      if (errors.length) {
-        reject(errors);
+      if (this.errors.length) {
+        reject(this.errors);
       } else {
-        resolve(this.includeStatement);
+        resolve(this.sequelizeQueryParams);
       }
     });
   }
@@ -104,19 +197,121 @@ class GetListRequest {
       return [];
     }
 
-    this.includeStatement = { include: [] };
     let errors = [];
+
+    Object.assign(this.sequelizeQueryParams, { includes: [] });
 
     validateSingleInclude(
       this.includes,
       this.model,
-      this.includeStatement,
+      this.sequelizeQueryParams,
       errors
     );
 
     return errors;
   }
 
+  /**
+   * Validate pagination
+   *
+   * @return {Array} Array of errors, if any
+   */
+  validatePagination() {
+    let hasOffset = this.pagination.hasOwnProperty('offset');
+    let hasLimit  = this.pagination.hasOwnProperty('limit');
+    let hasNumber = this.pagination.hasOwnProperty('number');
+    let hasSize   = this.pagination.hasOwnProperty('size');
+    let offset    = 0;
+    let limit     = 20;
+    let errors    = [];
+
+    // Check for mutually exclusive params "page[offset]" and "page[number]"
+    if (hasOffset && hasNumber) {
+      errors.push(buildPaginationErrHasOffsetAndNumber());
+    }
+
+    // Check for mutually exclusive params "page[limit]" and "page[size]"
+    if (hasLimit && hasSize) {
+      errors.push(buildPaginationErrHasLimitAndSize());
+    }
+
+    // Calculate and validate the offset and limit for the offset/limit strategy
+    if (hasLimit || hasOffset) {
+      limit = (hasLimit) ?
+        parseInt(this.pagination.limit, 10) :
+        20;
+
+        if (isNaN(limit)) {
+          errors.push(buildPaginationErrIsNaN('limit', this.pagination.limit));
+        } else if (limit < 0) {
+          errors.push(
+            buildPaginationErrOffsetLessThanMin(
+              'limit',
+              this.pagination.limit,
+              '0 (zero)'
+            )
+          );
+        }
+
+      offset = (hasOffset) ?
+        parseInt(this.pagination.offset, 10) :
+        0;
+
+        if (isNaN(offset)) {
+          errors.push(buildPaginationErrIsNaN('offset', this.pagination.offset));
+        } else if (offset < 0) {
+          errors.push(
+            buildPaginationErrOffsetLessThanMin(
+              'offset',
+              this.pagination.offset,
+              '0 (zero)'
+            )
+          );
+        }
+    }
+
+    // Calculate and validate offset and limit for the page/size strategy
+    if (hasNumber || hasSize) {
+      limit = (hasSize) ?
+        parseInt(this.pagination.size, 10) :
+        20;
+
+        if (isNaN(limit)) {
+          errors.push(buildPaginationErrIsNaN('size', this.pagination.size));
+        } else if (limit < 0) {
+          errors.push(
+            buildPaginationErrOffsetLessThanMin(
+              'size',
+              this.pagination.size,
+              '0 (zero)'
+            )
+          );
+        }
+
+      offset = (hasNumber) ?
+        parseInt((this.pagination.number * limit) - limit, 10) :
+        0;
+
+        if (isNaN(offset)) {
+          errors.push(buildPaginationErrIsNaN('number', this.pagination.number));
+        } else if (offset < 0) {
+          errors.push(
+            buildPaginationErrOffsetLessThanMin(
+              'number',
+              this.pagination.number,
+              '1 (one)'
+            )
+          );
+        }
+    }
+
+    Object.assign(this.sequelizeQueryParams, {
+      limit: limit,
+      offset: offset
+    });
+
+    return errors;
+  }
 }
 
 /**
@@ -151,6 +346,8 @@ function validateSingleInclude(parent, currentModel, includeStatement, errors) {
     } else {
       let msg = `The model "${currentModel.name}" has no relationship "${child}"`;
       let error = new BadRequest(msg);
+
+      error.setSource('include');
 
       errors.push(error);
     }
