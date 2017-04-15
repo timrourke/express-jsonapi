@@ -15,7 +15,7 @@ describe('jsonapi/GetListRequest', () => {
           include: 'foo,bar,foo.bingo,foo.bongo.ding,foo.bongo.dang,bar.toot,foo.bongo.ding.ring,foo.bongo.ding.rang'
         }
       });
-      let actual = request.includes;
+      let actual = request.include;
       let expected = {
         foo: {
           bingo: {},
@@ -37,6 +37,111 @@ describe('jsonapi/GetListRequest', () => {
   });
 
   describe('#validate()', () => {
+    let BizBang = {
+      name: 'bizBang',
+      associations: {}
+    };
+
+    let Baz = {
+      name: 'baz',
+      associations: {
+        'biz-bangs': {
+          target: BizBang
+        }
+      }
+    };
+
+    let Bar = {
+      name: 'bar',
+      associations: {
+        baz: {
+          target: Baz
+        }
+      }
+    };
+
+    let modelStub = {
+      name: 'foo',
+      associations: {
+        bars: {
+          target: Bar
+        }
+      }
+    };
+
+    it('should parse include param', (done) => {
+      let params = {
+        query: {
+          include: 'bars,bars.baz,bars.baz.biz-bangs'
+        }
+      };
+
+      let expected = {
+        include: [{
+          model: Bar,
+          include: [{
+            model: Baz,
+            include: [{
+              model: BizBang
+            }]
+          }]
+        }]
+      };
+
+      let request = new GetListRequest(params, modelStub);
+
+      request.validate().then(sequelizeQueryParams => {
+        sequelizeQueryParams.include.should.be.eql(expected.include);
+
+        done();
+      });
+    });
+
+    it('should parse include param when param is empty', (done) => {
+      let params = {
+        query: {}
+      };
+
+      let expected = {
+        include: []
+      };
+
+      let request = new GetListRequest(params, modelStub);
+
+      request.validate().then(sequelizeQueryParams => {
+        sequelizeQueryParams.include.should.be.eql(expected.include);
+
+        done();
+      });
+    });
+
+    it('should create errors when include param contains invalid models', (done) => {
+      let params = {
+        query: {
+          include: 'bars,bars.baz,bars.baz.boing,bang,bing.bong'
+        }
+      };
+
+      let request = new GetListRequest(params, modelStub);
+
+      request.validate().catch(errors => {
+        errors.length.should.be.eql(3);
+
+        let errorsString = JSON.stringify(errors);
+
+        errorsString.should.have
+          .string('The model \\"foo\\" has no relationship \\"bang\\"');
+
+        errorsString.should.have
+          .string('The model \\"foo\\" has no relationship \\"bing\\"');
+
+        errorsString.should.have
+          .string('The model \\"baz\\" has no relationship \\"boing\\"');
+
+        done();
+      });
+    });
+
     it('should create errors when mutually exclusive "page[offset]" and "page[number]" params are set', (done) => {
       let request = new GetListRequest({
         query: {
