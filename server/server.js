@@ -10,6 +10,7 @@ const db = initSequelize();
 const Controller = require('./controllers/controller');
 const InternalServerError = require('./jsonapi/errors/InternalServerError');
 const JsonApiMiddlewareValidateContentType = require('./jsonapi/middleware/validate-content-type');
+const notFoundHandler = require('./jsonapi/middleware/not-found-handler');
 
 const defineModels = require('./models/models');
 const Models = defineModels(db);
@@ -32,10 +33,10 @@ function logErrors(err, req, res, next) {
     console.error(err.message);
     console.error(err.stack);
   }
-  next(err);
+  next(err, req, res, next);
 }
 
-function clientErrorHandler(err, req, res) {
+function clientErrorHandler(err, req, res, next) {
   res.status(500).json({
     errors: [
       new InternalServerError()
@@ -72,6 +73,7 @@ let PostRoute = new Route(app, Models.Post, Controller);
 UserRoute.initialize();
 PostRoute.initialize();
 
+app.use(notFoundHandler);
 app.use(logErrors);
 app.use(clientErrorHandler);
 
