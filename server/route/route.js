@@ -7,6 +7,8 @@ const JsonApiResourceObjectLinks = require('./../jsonapi/ResourceObjectLinks');
 const NotFoundError = require('./../jsonapi/errors/NotFoundError');
 const GetListRequest = require('./../jsonapi/GetListRequest');
 const JsonApiExtractIncludedModelsAsFlatArray = require('./../jsonapi/extract-included-models-as-flat-array');
+const parseurl = require('parseurl');
+const config = require('./../config/config');
 
 class Route {
   /**
@@ -21,10 +23,7 @@ class Route {
     this.app = app;
     this.model = model;
     this.controllerClass = controllerClass;
-
-    this.modelType = inflection.pluralize(
-      StringUtils.convertCamelToDasherized(model.name)
-    );
+    this.modelType = model.getType();
   }
 
   /**
@@ -85,16 +84,24 @@ does not exist for ${this.modelType}`)
    */
   handleGetListRequest(req, res, next) {
     let controller = new this.controllerClass(this.model);
-    let request = new GetListRequest(req, this.model);
+    let request    = new GetListRequest(req, this.model);
 
     request.validate().then(sequelizeQueryParams => {
-      controller.getList(sequelizeQueryParams).then(foundModels => {
+      controller.getList(sequelizeQueryParams).then(result => {
+        let parsedUrl      = parseurl(req);
+        let count          = result.count;
+        let foundModels    = result.rows;
         let json = {
           links: {
-            self: `http://localhost:3000/api/${this.modelType}`
+            self: `${config.getApiBaseUrl()}/${this.modelType}${parsedUrl.search}`
           },
-          data: foundModels.map(model => new JsonApiResourceObject(model))
+          data: foundModels.map(model => new JsonApiResourceObject(model)),
         };
+
+        Object.assign(
+          json.links,
+          serializePaginationLinks(count, sequelizeQueryParams, parsedUrl)
+        );
 
         serializeIncludesForJson(foundModels, json);
 
@@ -127,19 +134,14 @@ does not exist for ${this.modelType}`)
 
     controller.getOne(req.params.id).then(foundModel => {
       if (!foundModel) {
-        return res.status(404).json({
-          data: null,
-          errors: [
-            new NotFoundError(`No ${this.modelType} found with the id of ${req.params.id}`)
-          ]
-        });
+        return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
       request.validate().then(sequelizeQueryParams => {
         foundModel[accessorMethodName](sequelizeQueryParams).then(foundModels => {
           let json = {
             links: {
-              self: `http://localhost:3000/api/${this.modelType}/${foundModel.id}/${relatedPathSegment}`
+              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/${relatedPathSegment}`
             },
             data: (association.isMultiAssociation) ?
               foundModels.map(model => new JsonApiResourceObject(model)) :
@@ -172,12 +174,7 @@ does not exist for ${this.modelType}`)
 
     controller.getOne(req.params.id).then(foundModel => {
       if (!foundModel) {
-        return res.status(404).json({
-          data: null,
-          errors: [
-            new NotFoundError(`No ${this.modelType} found with the id of ${req.params.id}`)
-          ]
-        });
+        return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
       res.json({
@@ -223,12 +220,7 @@ does not exist for ${this.modelType}`)
 
     controller.updateOne(req.params.id, attrs).then(updatedModel => {
       if (!updatedModel) {
-        return res.status(404).json({
-          data: null,
-          errors: [
-            new NotFoundError(`No ${this.modelType} found with the id of ${req.params.id}`)
-          ]
-        });
+        return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
       res.json({
@@ -252,12 +244,7 @@ does not exist for ${this.modelType}`)
 
     controller.deleteOne(req.params.id).then(deletedModel => {
       if (!deletedModel) {
-        return res.status(404).json({
-          data: null,
-          errors: [
-            new NotFoundError(`No ${this.modelType} found with the id of ${req.params.id}`)
-          ]
-        });
+        return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
       res.status(204).end();
@@ -286,6 +273,58 @@ function serializeIncludesForJson(modelArray, json) {
     json.included = getUniqueModelArray(includedModels)
       .map(model => new JsonApiResourceObject(model));
   }
+}
+
+/**
+ * Build pagination links for a get list request.
+ *
+ * @param {Number} count The total count for a given query
+ * @param {Object} sequelizeQueryParams The query constraints passed to Sequelize
+ * @param {Object} parsedUrl The parsed URL
+ * @return {Object}
+ */
+function serializePaginationLinks(count, sequelizeQueryParams, parsedUrl) {
+  let regexToRemovePageParams = /[\?&]?page\[[\w]+\]=[\d]+&?/g;
+  let newBaseUrl = config.getBaseUrl() + parsedUrl.path
+    .replace(regexToRemovePageParams, '');
+  let offset     = sequelizeQueryParams.offset;
+  let limit      = sequelizeQueryParams.limit;
+  let lastOffset = Math.ceil(count/limit);
+
+  let prev = ((offset * limit) - limit > 0) ?
+    `${newBaseUrl}&page[offset]=${offset - 1}&page[limit]=${limit}` :
+    null;
+
+  let next = ((offset + 1) * limit < count) ?
+    `${newBaseUrl}&page[offset]=${offset + 1}&page[limit]=${limit}` :
+    null;
+
+  let first = `${newBaseUrl}&page[offset]=0&page[limit]=${limit}`;
+
+  let last  = `${newBaseUrl}&page[offset]=${lastOffset}&page[limit]=${limit}`;
+
+  return {
+    first: first,
+    last:  last,
+    next:  next,
+    prev:  prev,
+  };
+}
+
+/**
+ * Throw a 404 error for no model found with an ID
+ *
+ * @param {Express.Request} req The Express Request object
+ * @param {Express.Response} res The Express Response object
+ * @param {String} modelType The model type that wasn't found
+ */
+function throwNoModelTypeFoundWithId(req, res, modelType) {
+  res.status(404).json({
+    data: null,
+    errors: [
+      new NotFoundError(`No ${modelType} found with the id of ${req.params.id}`)
+    ]
+  });
 }
 
 /**
