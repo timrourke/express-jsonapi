@@ -1,8 +1,7 @@
 'use strict';
 
-const inflection = require('inflection');
 const StringUtils = require('./../utils/String');
-const envConfig = require('./../config/env.json');
+const config = require('./../config/config');
 
 class ResourceObjectLinks {
 
@@ -23,15 +22,12 @@ class ResourceObjectLinks {
   toJSON() {
     let links = {};
 
-    let envData = envConfig[process.env.NODE_ENV];
-
-    let host = envData.host;
-    let apiBase = envData.apiBase;
+    let baseUrl = config.getApiBaseUrl();
     let modelId = this.modelInstance.id;
-    let modelName = inflection.pluralize(this.modelInstance.Model.name);
+    let modelName = this.modelInstance.getType();
     let modelRoute = StringUtils.convertCamelToDasherized(modelName);
 
-    links.self = `${host}${apiBase}/${modelRoute}/${modelId}`;
+    links.self = `${baseUrl}/${modelRoute}/${modelId}`;
 
     return links;
   }
