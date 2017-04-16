@@ -28,23 +28,6 @@ describe('users', () => {
   });
 
   describe('GET /api/users', () => {
-    it('should return empty array when no users exist', (done) => {
-      chai.request(server.app)
-        .get('/api/users')
-        .set('Content-Type', 'application/vnd.api+json')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.eql({
-            links: {
-              self: 'http://localhost:3000/api/users'
-            },
-            data: []
-          });
-
-          done();
-        });
-    });
-
     it('should return an array of users', (done) => {
       let users = Factory.buildList('user', 2);
 
