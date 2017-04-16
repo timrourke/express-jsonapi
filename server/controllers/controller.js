@@ -37,8 +37,8 @@ class Controller {
    */
   getList(sequelizeQueryParams = {}) {
     return new Promise((resolve, reject) => {
-      this.model.findAll(sequelizeQueryParams).then(foundModels => {
-        resolve(foundModels);
+      this.model.findAndCountAll(sequelizeQueryParams).then(result => {
+        resolve(result);
       }).catch(function() {
         reject(arguments);
       });
