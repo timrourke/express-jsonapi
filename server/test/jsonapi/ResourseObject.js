@@ -24,6 +24,10 @@ function ModelInstanceStub() {
     return keyName + ' value';
   };
 
+  this.getType = function() {
+    return 'mocked-model-instances';
+  };
+
   this.id = 34672;
 
   this.Model = {
@@ -31,6 +35,9 @@ function ModelInstanceStub() {
     associations: {
       'bar': {},
       'baz': {}
+    },
+    getType: function() {
+      return 'mocked-model-instances';
     }
   };
 }

@@ -20,6 +20,13 @@ class ModelInstanceStub {
     return Promise.resolve();
   }
 
+  findAndCountAll() {
+    return Promise.resolve({
+      count: 0,
+      rows: []
+    });
+  }
+
   update() {
     return Promise.resolve();
   }
