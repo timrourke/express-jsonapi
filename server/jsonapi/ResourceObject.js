@@ -1,8 +1,21 @@
 'use strict';
 
-const inflection = require('inflection');
 const StringUtils = require('./../utils/String');
 const RelationshipLink = require('./RelationshipLink');
+
+/**
+ * Matches an attribute's key name for being a foreign key. If the key appears
+ * to be a foreign key, the matching JSON API type string is returned. Otherwise
+ * returns false.
+ *
+ * @param {String}
+ * @return {String|Boolean}
+ */
+function foreignKey(attrKeyName) {
+  let match = attrKeyName.match(/([\w-]+)-id/);
+
+  return (match && match[1]) || false;
+}
 
 class ResourceObject {
 
@@ -28,18 +41,14 @@ class ResourceObject {
 
     attributes
       .map(attr => StringUtils.convertCamelToDasherized(attr))
-      .filter(attr => attr !== 'id')
+      .filter(attr => {
+        return (attr !== 'id') && !foreignKey(attr);
+      })
       .forEach((newKeyName, index) => {
         let originalKeyName = originalAttrs[index];
         let value = instance.get(originalKeyName);
-        let foreignKey = newKeyName.match(/([\w]+)-id/);
 
-        if (foreignKey &&
-            instance.Model.associations.hasOwnProperty(foreignKey[1])) {
-          serializedAttributes[foreignKey[1]] = String(value);
-        } else {
-          serializedAttributes[newKeyName] = value;
-        }
+        serializedAttributes[newKeyName] = value;
       });
 
     return serializedAttributes;
@@ -49,12 +58,14 @@ class ResourceObject {
    * Serialize the model's relationships
    *
    * @param {Object} json The object to serialize as JSON
-   * @param {String} type The model's JSON API type
-   * @param {String} id The model instance's ID
-   * @param {Object} associations The associations for the model
    */
-  serializeRelationships(json, type, id, associations) {
-    let relationships = Object.keys(associations);
+  serializeRelationships(json) {
+    let relationships = Object.keys(this.modelInstance.Model.associations);
+    let id = String(this.modelInstance.id);
+    let originalAttrs = this.modelInstance.attributes;
+    let foreignKeys = originalAttrs
+      .map(attr => StringUtils.convertCamelToDasherized(attr))
+      .map(attr => foreignKey(attr));
 
     if (!relationships.length) {
       return;
@@ -64,8 +75,16 @@ class ResourceObject {
 
     relationships.forEach(rel => {
       json.relationships[rel] = {
-        links: new RelationshipLink(type, id, rel)
+        links: new RelationshipLink(this.modelInstance.getType(), id, rel)
       };
+
+      if (foreignKeys.indexOf(rel) !== -1) {
+        let index = foreignKeys.indexOf(rel);
+        json.relationships[rel].data = {
+          type: this.modelInstance.Model.associations[rel].target.getType(),
+          id: String(this.modelInstance.get(originalAttrs[index]))
+        };
+      }
     });
   }
 
@@ -77,20 +96,16 @@ class ResourceObject {
   toJSON() {
     let model = this.modelInstance.Model;
 
-    let type = inflection.pluralize(
-      StringUtils.convertCamelToDasherized(model.name)
-    );
-
     let id = String(this.modelInstance.id);
 
     let json = {
-      type: inflection.pluralize(type),
+      type: model.getType(),
       id: id,
       attributes: this.serializeAttributes(this.modelInstance.attributes),
     };
 
     if (model.hasOwnProperty('associations')) {
-      this.serializeRelationships(json, type, id, model.associations);
+      this.serializeRelationships(json, id, model.associations);
     }
 
     return json;
