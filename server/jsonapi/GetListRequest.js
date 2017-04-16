@@ -213,10 +213,10 @@ class GetListRequest {
    * @return {Array} Array of errors, if any
    */
   validatePagination() {
-    let hasOffset = this.pagination.hasOwnProperty('offset');
-    let hasLimit  = this.pagination.hasOwnProperty('limit');
-    let hasNumber = this.pagination.hasOwnProperty('number');
-    let hasSize   = this.pagination.hasOwnProperty('size');
+    let hasOffset = this.pagination.hasOwnProperty('offset') && this.pagination.offset;
+    let hasLimit  = this.pagination.hasOwnProperty('limit') && this.pagination.limit;
+    let hasNumber = this.pagination.hasOwnProperty('number') && this.pagination.number;
+    let hasSize   = this.pagination.hasOwnProperty('size') && this.pagination.size;
     let offset    = 0;
     let limit     = 20;
     let errors    = [];
