@@ -2,6 +2,8 @@
 
 const UserAttrs = require('./User');
 const PostAttrs = require('./Post');
+const inflection = require('inflection');
+const StringUtils = require('./../utils/String');
 
 /**
  * Define the models and their relationships and return them as a hash
@@ -17,6 +19,22 @@ function defineModels(sequelize) {
   // Define the relationships
   User.hasMany(Post);
   Post.belongsTo(User);
+
+  // Add JSON API type lookup to Model prototype
+  sequelize.Model.prototype.getType = function() {
+    if (!this.hasOwnProperty('_jsonApiType')) {
+      this._jsonApiType = inflection.pluralize(
+        StringUtils.convertCamelToDasherized(this.name)
+      );
+    }
+
+    return this._jsonApiType;
+  };
+
+  // Alias to JSON API type lookup on Model
+  sequelize.Instance.prototype.getType = function() {
+    return this.Model.getType();
+  };
 
   return {
     User: User,
