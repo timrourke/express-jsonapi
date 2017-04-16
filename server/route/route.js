@@ -10,6 +10,8 @@ const JsonApiExtractIncludedModelsAsFlatArray = require('./../jsonapi/extract-in
 const parseurl = require('parseurl');
 const config = require('./../config/config');
 
+const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*&?/g;
+
 class Route {
   /**
    * Create a JSON API-compliant route
@@ -89,11 +91,12 @@ does not exist for ${this.modelType}`)
     request.validate().then(sequelizeQueryParams => {
       controller.getList(sequelizeQueryParams).then(result => {
         let parsedUrl      = parseurl(req);
+        let queryParams    = parsedUrl.search || '';
         let count          = result.count;
         let foundModels    = result.rows;
         let json = {
           links: {
-            self: `${config.getApiBaseUrl()}/${this.modelType}${parsedUrl.search}`
+            self: `${config.getApiBaseUrl()}/${this.modelType}${queryParams}`
           },
           data: foundModels.map(model => new JsonApiResourceObject(model)),
         };
@@ -284,24 +287,31 @@ function serializeIncludesForJson(modelArray, json) {
  * @return {Object}
  */
 function serializePaginationLinks(count, sequelizeQueryParams, parsedUrl) {
-  let regexToRemovePageParams = /[\?&]?page\[[\w]+\]=[\d]+&?/g;
-  let newBaseUrl = config.getBaseUrl() + parsedUrl.path
-    .replace(regexToRemovePageParams, '');
+  let base       = config.getBaseUrl() + parsedUrl.pathname;
+  let query      = (parsedUrl.search || '')
+    .slice(1)
+    .replace(REGEX_TO_REMOVE_PAGE_PARAMS, '');
   let offset     = sequelizeQueryParams.offset;
   let limit      = sequelizeQueryParams.limit;
   let lastOffset = Math.ceil(count/limit);
 
+  if (query) {
+    query += '&';
+  }
+
+  let baseUrl = `${base}?${query}`;
+
   let prev = ((offset * limit) - limit > 0) ?
-    `${newBaseUrl}&page[offset]=${offset - 1}&page[limit]=${limit}` :
+    `${baseUrl}page[offset]=${offset - 1}&page[limit]=${limit}` :
     null;
 
   let next = ((offset + 1) * limit < count) ?
-    `${newBaseUrl}&page[offset]=${offset + 1}&page[limit]=${limit}` :
+    `${baseUrl}page[offset]=${offset + 1}&page[limit]=${limit}` :
     null;
 
-  let first = `${newBaseUrl}&page[offset]=0&page[limit]=${limit}`;
+  let first = `${baseUrl}page[offset]=0&page[limit]=${limit}`;
 
-  let last  = `${newBaseUrl}&page[offset]=${lastOffset}&page[limit]=${limit}`;
+  let last  = `${baseUrl}page[offset]=${lastOffset}&page[limit]=${limit}`;
 
   return {
     first: first,
