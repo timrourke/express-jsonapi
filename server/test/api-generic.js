@@ -44,12 +44,7 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .end((err, res) => {
             res.should.have.status(200);
-            res.body.should.be.eql({
-              links: {
-                self: `http://localhost:3000/api/${modelType}`
-              },
-              data: []
-            });
+            res.body.data.should.be.eql([]);
 
             done();
           });
@@ -67,7 +62,6 @@ Object.keys(models).forEach(modelName => {
           .get(`/api/${modelType}`)
           .set('Content-Type', 'application/vnd.api+json')
           .end((err, res) => {
-            console.log(res.body);
             res.should.have.status(200);
             res.body.data.length.should.be.eql(2);
             res.body.data[0].type.should.be.eql(modelType);
