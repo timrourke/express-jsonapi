@@ -1,7 +1,6 @@
 'use strict';
 
-const inflection = require('inflection');
-const envConfig = require('./../config/env.json');
+const config = require('./../config/config');
 
 class RelationshipLink {
 
@@ -25,14 +24,10 @@ class RelationshipLink {
    */
   toJSON() {
     let link = {};
+    let baseUrl = config.getApiBaseUrl();
 
-    let envData = envConfig[process.env.NODE_ENV];
-
-    let host = envData.host;
-    let apiBase = envData.apiBase;
-
-    link.self = `${host}${apiBase}/${this.modelRoute}/${this.modelId}/relationships/${this.relationship}`;
-    link.related = `${host}${apiBase}/${this.modelRoute}/${this.modelId}/${this.relationship}`;
+    link.self = `${baseUrl}/${this.modelRoute}/${this.modelId}/relationships/${this.relationship}`;
+    link.related = `${baseUrl}/${this.modelRoute}/${this.modelId}/${this.relationship}`;
 
     return link;
   }
