@@ -99,6 +99,9 @@ does not exist for ${this.modelType}`)
             self: `${config.getApiBaseUrl()}/${this.modelType}${queryParams}`
           },
           data: foundModels.map(model => new JsonApiResourceObject(model)),
+          meta: {
+            total: count
+          }
         };
 
         Object.assign(
@@ -311,7 +314,7 @@ function serializePaginationLinks(count, sequelizeQueryParams, parsedUrl) {
 
   let first = `${baseUrl}page[offset]=0&page[limit]=${limit}`;
 
-  let last  = `${baseUrl}page[offset]=${lastOffset}&page[limit]=${limit}`;
+  let last = `${baseUrl}page[offset]=${lastOffset}&page[limit]=${limit}`;
 
   return {
     first: first,
