@@ -10,7 +10,7 @@ const JsonApiExtractIncludedModelsAsFlatArray = require('./../jsonapi/extract-in
 const parseurl = require('parseurl');
 const config = require('./../config/config');
 
-const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*&?/g;
+const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*/g;
 
 class Route {
   /**
@@ -293,7 +293,7 @@ function serializePaginationLinks(count, sequelizeQueryParams, parsedUrl) {
     .replace(REGEX_TO_REMOVE_PAGE_PARAMS, '');
   let offset     = sequelizeQueryParams.offset;
   let limit      = sequelizeQueryParams.limit;
-  let lastOffset = Math.ceil(count/limit);
+  let lastOffset = Math.floor(count/limit) * limit;
 
   if (query) {
     query += '&';
@@ -301,12 +301,12 @@ function serializePaginationLinks(count, sequelizeQueryParams, parsedUrl) {
 
   let baseUrl = `${base}?${query}`;
 
-  let prev = ((offset * limit) - limit > 0) ?
-    `${baseUrl}page[offset]=${offset - 1}&page[limit]=${limit}` :
+  let prev = (offset - limit > 0) ?
+    `${baseUrl}page[offset]=${offset - limit}&page[limit]=${limit}` :
     null;
 
-  let next = ((offset + 1) * limit < count) ?
-    `${baseUrl}page[offset]=${offset + 1}&page[limit]=${limit}` :
+  let next = offset + limit <= lastOffset ?
+    `${baseUrl}page[offset]=${offset + limit}&page[limit]=${limit}` :
     null;
 
   let first = `${baseUrl}page[offset]=0&page[limit]=${limit}`;
