@@ -12,8 +12,7 @@ function buildUnsupportedMediaTypeError(contentType) {
   return {
     status: 415,
     title: 'Unsupported Media Type',
-    detail: `Media type parameters or modifications to JSON API Content-Type \
-header not supported ("${contentType}")`,
+    detail: `Media type parameters or modifications to JSON API Content-Type header not supported ("${contentType}")`,
     links: {
       about: 'http://jsonapi.org/format/#content-negotiation-clients'
     }
@@ -44,8 +43,7 @@ function validateContentTypeMiddleware(req, res, next) {
   // Return error if `Content-Type` request header does not contain the JSON
   // API descriptor at all
   } else if (contentType !== expected) {
-    let error = new BadRequest(`Unsupported value for Content-Type header \
-("${contentType}")`);
+    let error = new BadRequest(`Unsupported value for Content-Type header ("${contentType}")`);
 
     error.links = {
       about: 'http://jsonapi.org/format/#content-negotiation-clients'

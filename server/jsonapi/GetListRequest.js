@@ -81,8 +81,7 @@ function parsePagination(queryParams) {
  * @return {BadRequest}
  */
 function buildPaginationErrHasOffsetAndNumber() {
-  let msg = `Invalid pagination strategy. Use of "page[number]" and "page[offset]" \
-as pagination params are mutually exclusive. Please use one or the other.`;
+  let msg = `Invalid pagination strategy. Use of "page[number]" and "page[offset]" as pagination params are mutually exclusive. Please use one or the other.`;
   let error = new BadRequest(msg);
 
   error.setSource('page');
@@ -97,8 +96,7 @@ as pagination params are mutually exclusive. Please use one or the other.`;
  * @return {BadRequest}
  */
 function buildPaginationErrHasLimitAndSize() {
-  let msg = `Invalid pagination strategy. Use of "page[limit]" and "page[size]" \
-as pagination params are mutually exclusive. Please use one or the other.`;
+  let msg = `Invalid pagination strategy. Use of "page[limit]" and "page[size]" as pagination params are mutually exclusive. Please use one or the other.`;
   let error = new BadRequest(msg);
 
   error.setSource('page');
@@ -115,8 +113,7 @@ as pagination params are mutually exclusive. Please use one or the other.`;
  * @return {BadRequest}
  */
 function buildPaginationErrIsNaN(pageParam, invalidValue) {
-  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). \
-"page[${pageParam}]" must be a number.`;
+  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must be a number.`;
   let error = new BadRequest(msg);
 
   error.setSource(`page[${pageParam}]`);
@@ -135,8 +132,7 @@ function buildPaginationErrIsNaN(pageParam, invalidValue) {
  * @return {BadRequest}
  */
 function buildPaginationErrOffsetLessThanMin(pageParam, invalidValue, minimum) {
-  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). \
-"page[${pageParam}]" must not be a number lower than ${minimum}.`;
+  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must not be a number lower than ${minimum}.`;
   let error = new BadRequest(msg);
 
   error.setSource(`page[${pageParam}]`);
