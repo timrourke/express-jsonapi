@@ -57,6 +57,6 @@ function validateContentTypeMiddleware(req, res, next) {
   }
 
   next();
-};
+}
 
 module.exports = validateContentTypeMiddleware;
