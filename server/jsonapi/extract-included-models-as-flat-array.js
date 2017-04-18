@@ -1,9 +1,13 @@
 'use strict';
 
 /**
- * Extract included models as a flat array from a Sequelize model array
+ * Extract included models as a flat array from a Sequelize model array.
  *
- * @param {Sequelize.Model|Array} models Model or models returned from Sequelize
+ * If a model instance in the array `models` has an association called 'foos',
+ * and it has a key of 'foos' defined on the instance, the related 'foo' models
+ * will be pushed into the `included` array.
+ *
+ * @param {Sequelize.Instance|Sequelize.Instance[]} models Sequelize.Instance (or array of them)
  * @param {Array} included Array of included models to serialize
  */
 function extractIncludedModelsAsFlatArray(models, included) {
