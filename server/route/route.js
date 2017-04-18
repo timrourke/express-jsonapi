@@ -55,25 +55,7 @@ class Route {
     });
 
     Object.keys(this.model.associations).forEach(relationship => {
-      let association = this.model.associations[relationship];
-      let relatedModel = association.target;
-      let relatedModelType = StringUtils.convertCamelToDasherized(relatedModel.name);
-      let relatedPathSegment = (association.isMultiAssociation) ?
-        inflection.pluralize(relatedModelType) :
-        relatedModelType;
-
-      this.app.get(`/api/${this.modelType}/:id/${relatedPathSegment}`, function() {
-        _this.handleRelatedGetListRequest(relationship, relatedPathSegment, ...arguments);
-      });
-
-      this.app.all(`/api/${this.modelType}/:id/:relationship`, (req, res) => {
-        res.status(404).json({
-          errors: [
-            new NotFoundError(`The relationship "${req.params.relationship}" \
-does not exist for ${this.modelType}`)
-          ]
-        });
-      });
+      buildRelatedGetListRoutesForRelationship(this, relationship);
     });
   }
 
@@ -258,6 +240,40 @@ does not exist for ${this.modelType}`)
       next(err, req, res, next);
     });
   }
+}
+
+/**
+ * Build a related get list route for a given route's model's relationship
+ *
+ * @param {Route} route Route instance to define the route handlers for
+ * @param {String} relationship Name of the relationship to define route handlers for
+ */
+function buildRelatedGetListRoutesForRelationship(route, relationship) {
+  let association = route.model.associations[relationship];
+  let relatedModel = association.target;
+  let relatedModelType = StringUtils.convertCamelToDasherized(relatedModel.name);
+  let relatedPathSegment = (association.isMultiAssociation) ?
+    inflection.pluralize(relatedModelType) :
+    relatedModelType;
+
+  route.app.get(`/api/${route.modelType}/:id/${relatedPathSegment}`, function() {
+    route.handleRelatedGetListRequest(
+      relationship,
+      relatedPathSegment,
+      ...arguments
+    );
+  });
+
+  // Define a general 404 handler for non-existent relationships
+  route.app.all(`/api/${route.modelType}/:id/:relationship`, (req, res) => {
+    let msg = `The relationship "${req.params.relationship}" does not exist for ${route.modelType}`;
+
+    res.status(404).json({
+      errors: [
+        new NotFoundError(msg)
+      ]
+    });
+  });
 }
 
 /**
