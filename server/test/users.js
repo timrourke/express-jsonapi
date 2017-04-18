@@ -145,6 +145,33 @@ describe('users', () => {
     });
   });
 
+  describe('GET /api/users/1/posts', () => {
+    it('should retrieve posts related to user', (done) => {
+      let userModel = server.models.user;
+      let postModel = server.models.post;
+      let user = Factory.build('user', { id: 1 });
+      let posts = Factory.buildList('post', 4, { userId: 1 });
+      let unrelatedPost = Factory.build('post', { userId: 2 });
+
+      let promises = [
+        userModel.create(user),
+        postModel.create(unrelatedPost)
+      ].concat(posts.map(p => postModel.create(p)));
+
+      Promise.all(promises).then(() => {
+        chai.request(server.app)
+        .get('/api/users/1/posts')
+        .set('Content-Type', 'application/vnd.api+json')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.data.length.should.be.eql(4);
+
+          done();
+        });
+      });
+    });
+  });
+
   describe('POST /api/users', () => {
     it('should create user', (done) => {
       chai.request(server.app)
