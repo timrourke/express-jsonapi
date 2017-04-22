@@ -209,6 +209,7 @@ describe('users', () => {
         .send({
           data: {
             type: 'users',
+            id: 1,
             attributes: {
               firstName: 'Samantha',
               lastName: 'von Berg',
@@ -244,6 +245,7 @@ describe('users', () => {
         .send({
           data: {
             type: 'users',
+            id: 1,
             attributes: {
               firstName: 'Ron',
               lastName: 'Carlin',

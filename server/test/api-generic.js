@@ -123,6 +123,37 @@ Object.keys(models).forEach(modelName => {
     });
 
     describe(`POST /api/${modelType}`, () => {
+      it(`should throw 422 when \`data\` member does not exist`, (done) => {
+        chai.request(server.app)
+          .post(`/api/${modelType}`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({})
+          .end((err, res) => {
+            res.should.have.status(422);
+            res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
+      it(`should throw 403 when \`id\` member is defined by client`, (done) => {
+        chai.request(server.app)
+          .post(`/api/${modelType}`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({
+            data: {
+              type: modelType,
+              id: 583
+            }
+          })
+          .end((err, res) => {
+            res.should.have.status(403);
+            res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
       it(`should create ${modelName}`, (done) => {
         let modelDefinition = Factory.build(modelName);
         modelDefinition.id = 1;
@@ -167,6 +198,19 @@ Object.keys(models).forEach(modelName => {
         }
       });
 
+      it(`should throw 422 when \`data\` member does not exist`, (done) => {
+        chai.request(server.app)
+          .patch(`/api/${modelType}/1`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({})
+          .end((err, res) => {
+            res.should.have.status(422);
+            res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
       it(`should throw 404 when ${modelName} does not exist`, (done) => {
         chai.request(server.app)
           .patch(`/api/${modelType}/1`)
@@ -174,6 +218,7 @@ Object.keys(models).forEach(modelName => {
           .send({
             data: {
               type: modelType,
+              id: 1,
               attributes: attrs2
             }
           })
@@ -201,6 +246,7 @@ Object.keys(models).forEach(modelName => {
           .send({
             data: {
               type: modelType,
+              id: 1,
               attributes: attrs2
             }
           })
