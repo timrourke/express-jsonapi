@@ -109,6 +109,17 @@ Object.keys(models).forEach(modelName => {
             done();
           });
       });
+
+      it(`should throw 404 when visiting relationships url without specifying relationship`, (done) => {
+        chai.request(server.app)
+          .get(`/api/${modelType}/1/relationships`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .end((err, res) => {
+            res.should.have.status(404);
+
+            done();
+          });
+      });
     });
 
     describe(`POST /api/${modelType}`, () => {

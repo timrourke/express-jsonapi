@@ -12,6 +12,15 @@ class ResourceObjectLinks {
    */
   constructor(modelInstance) {
     this.modelInstance = modelInstance;
+
+    let baseUrl = config.getApiBaseUrl();
+    let modelId = this.modelInstance.id;
+    let modelName = this.modelInstance.getType();
+    let modelRoute = StringUtils.convertCamelToDasherized(modelName);
+
+    this.links = {
+      self: `${baseUrl}/${modelRoute}/${modelId}`
+    };
   }
 
   /**
@@ -20,16 +29,7 @@ class ResourceObjectLinks {
    * @return {Object}
    */
   toJSON() {
-    let links = {};
-
-    let baseUrl = config.getApiBaseUrl();
-    let modelId = this.modelInstance.id;
-    let modelName = this.modelInstance.getType();
-    let modelRoute = StringUtils.convertCamelToDasherized(modelName);
-
-    links.self = `${baseUrl}/${modelRoute}/${modelId}`;
-
-    return links;
+    return this.links;
   }
 }
 

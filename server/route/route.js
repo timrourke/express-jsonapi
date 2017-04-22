@@ -3,8 +3,10 @@
 const inflection = require('inflection');
 const StringUtils = require('../utils/String');
 const JsonApiResourceObject = require('./../jsonapi/ResourceObject');
+const JsonApiResourceIdentifierObject = require('./../jsonapi/ResourceIdentifierObject');
 const JsonApiResourceObjectLinks = require('./../jsonapi/ResourceObjectLinks');
 const NotFoundError = require('./../jsonapi/errors/NotFoundError');
+const NotFoundHandler = require('./../jsonapi/middleware/not-found-handler');
 const GetListRequest = require('./../jsonapi/GetListRequest');
 const JsonApiExtractIncludedModelsAsFlatArray = require('./../jsonapi/extract-included-models-as-flat-array');
 const parseurl = require('parseurl');
@@ -53,6 +55,8 @@ class Route {
     this.app.delete(`/api/${this.modelType}/:id`, function() {
       _this.handleDeleteRequest(...arguments);
     });
+
+    this.app.all(`/api/${this.modelType}/:id/relationships`, NotFoundHandler);
 
     Object.keys(this.model.associations).forEach(relationship => {
       buildRelatedGetListRoutesForRelationship(this, relationship);
@@ -105,7 +109,7 @@ class Route {
   }
 
   /**
-   * Handle a related get list request
+   * Handle a related request
    *
    * @param {String} relationship The related model
    * @param {String} relatedPathSegment The URL path segment for the relationship
@@ -113,7 +117,7 @@ class Route {
    * @param {Express.Response} res The Express response
    * @param {Function} next The next Express handler/middleware
    */
-  handleRelatedGetListRequest(relationship, relatedPathSegment, req, res, next) {
+  handleRelatedRequest(relationship, relatedPathSegment, req, res, next) {
     let association = this.model.associations[relationship];
     let relatedModel = association.target;
     let controller = new this.controllerClass(this.model);
@@ -129,7 +133,7 @@ class Route {
         foundModel[accessorMethodName](sequelizeQueryParams).then(foundModels => {
           let json = {
             links: {
-              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/${relatedPathSegment}`
+              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/${relatedPathSegment}`,
             },
             data: (association.isMultiAssociation) ?
               foundModels.map(model => new JsonApiResourceObject(model)) :
@@ -137,6 +141,55 @@ class Route {
           };
 
           serializeIncludesForJson(foundModels, json);
+
+          res.json(json);
+        }).catch(err => {
+          next(err, req, res, next);
+        });
+      }).catch(errors => {
+        res.status(400).json({
+          errors: errors
+        });
+      });
+    });
+  }
+
+  /**
+   * Handle a relationship objects request
+   *
+   * @param {String} relationship The related model
+   * @param {String} relatedPathSegment The URL path segment for the relationship
+   * @param {Express.Request} req The Express request
+   * @param {Express.Response} res The Express response
+   * @param {Function} next The next Express handler/middleware
+   */
+  handleRelationshipObjectsRequest(relationship, relatedPathSegment, req, res, next) {
+    let association = this.model.associations[relationship];
+    let relatedModel = association.target;
+    let controller = new this.controllerClass(this.model);
+    let request = new GetListRequest(req, relatedModel);
+    let accessorMethodName = association.accessors.get;
+
+    controller.getOne(req.params.id).then(foundModel => {
+      if (!foundModel) {
+        return throwNoModelTypeFoundWithId(req, res, this.modelType);
+      }
+
+      request.validate().then(sequelizeQueryParams => {
+
+        // Resource Identifier Objects only require ID and type attributes
+        sequelizeQueryParams.attributes = ['id'];
+
+        foundModel[accessorMethodName](sequelizeQueryParams).then(foundModels => {
+          let json = {
+            links: {
+              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/relationships/${relatedPathSegment}`,
+              related: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/${relatedPathSegment}`,
+            },
+            data: (association.isMultiAssociation) ?
+              foundModels.map(model => new JsonApiResourceIdentifierObject(model)) :
+              new JsonApiResourceIdentifierObject(foundModels)
+          };
 
           res.json(json);
         }).catch(err => {
@@ -186,12 +239,18 @@ class Route {
     const attrs = req.body.data.attributes;
 
     controller.createOne(attrs).then(newModel => {
-      res.json({
-        links: new JsonApiResourceObjectLinks(newModel),
-        data: new JsonApiResourceObject(newModel)
-      });
+      let links = new JsonApiResourceObjectLinks(newModel);
+
+      res
+        .location(links.links.self)
+        .json({
+          links: links,
+          data: new JsonApiResourceObject(newModel)
+        });
     }).catch(err => {
-      next(err, req, res, next);
+      console.log(typeof err[0].errors[0]);
+      res.json(err);
+      //next(err, req, res, next);
     });
   }
 
@@ -256,8 +315,29 @@ function buildRelatedGetListRoutesForRelationship(route, relationship) {
     inflection.pluralize(relatedModelType) :
     relatedModelType;
 
+  // Define a handler for getting relationship objects for the relationship
+  route.app.get(`/api/${route.modelType}/:id/relationships/${relatedPathSegment}`, function() {
+    route.handleRelationshipObjectsRequest(
+      relationship,
+      relatedPathSegment,
+      ...arguments
+    );
+  });
+
+  // Define a general 404 handler for non-existent relationships
+  route.app.all(`/api/${route.modelType}/:id/relationships/:relationship`, (req, res) => {
+    let msg = `The relationship "${req.params.relationship}" does not exist for ${route.modelType}`;
+
+    res.status(404).json({
+      errors: [
+        new NotFoundError(msg)
+      ]
+    });
+  });
+
+  // Define a handler for getting the related objects themselves
   route.app.get(`/api/${route.modelType}/:id/${relatedPathSegment}`, function() {
-    route.handleRelatedGetListRequest(
+    route.handleRelatedRequest(
       relationship,
       relatedPathSegment,
       ...arguments
@@ -274,6 +354,7 @@ function buildRelatedGetListRoutesForRelationship(route, relationship) {
       ]
     });
   });
+
 }
 
 /**
