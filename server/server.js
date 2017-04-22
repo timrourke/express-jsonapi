@@ -10,9 +10,8 @@ const db = initSequelize();
 const Controller = require('./controllers/controller');
 const InternalServerError = require('./jsonapi/errors/InternalServerError');
 const JsonApiMiddlewareValidateContentType = require('./jsonapi/middleware/validate-content-type');
+const JsonApiMiddlewareValidateRequestBody = require('./jsonapi/middleware/validate-request-body');
 const notFoundHandler = require('./jsonapi/middleware/not-found-handler');
-const UnprocessableEntity = require('./jsonapi/errors/UnprocessableEntity');
-const ForbiddenError = require('./jsonapi/errors/ForbiddenError');
 
 const defineModels = require('./models/models');
 const Models = defineModels(db);
@@ -67,80 +66,8 @@ app.get('/health', function (req, res) {
 // Validate `Content-Type` request header
 app.use(JsonApiMiddlewareValidateContentType);
 
-app.use(function(req, res, next) {
-  let isPatchOrPost = req.method === 'PATCH' || req.method === 'POST';
-  let isApiRequest = req.path.indexOf('/api') === 0;
-  let shouldValidateReqBody = isPatchOrPost && isApiRequest;
-
-  if (shouldValidateReqBody) {
-    let errors = [];
-
-    if (!req.body.hasOwnProperty('data')) {
-      let error = new UnprocessableEntity(
-        "Missing `data` Member at document's top level."
-      );
-
-      error.setPointer('');
-
-      return res.status(422).json({
-        errors: [error]
-      });
-    }
-
-    if (!req.body.data.hasOwnProperty('type')) {
-      let missingTypeError = new UnprocessableEntity(
-        "Invalid Resource Object. Missing `data.type` Member at Resource Object's top level."
-      );
-
-      missingTypeError.setPointer('/data');
-      missingTypeError.links = {
-        about: 'http://jsonapi.org/format/#document-resource-objects'
-      };
-
-      errors.push(missingTypeError);
-    }
-
-    if (req.method === 'PATCH' && !req.body.data.id) {
-      let missingIdError = new UnprocessableEntity(
-        "Invalid Resource Object for PATCH request. Missing `data.id` Member at Resource Object's top level."
-      );
-
-      missingIdError.setPointer('/data');
-      missingIdError.links = {
-        about: 'http://jsonapi.org/format/#document-resource-objects'
-      };
-
-      errors.push(missingIdError);
-    }
-
-    if (req.method === 'POST' && req.body.data.hasOwnProperty('id')) {
-      let hasClientProvidedIdError = new ForbiddenError(
-        "Invalid Resource Object for POST request. Client-generated IDs for requests to create new resources is unsupported."
-      );
-
-      hasClientProvidedIdError.setPointer('/data/id');
-      hasClientProvidedIdError.links = {
-        about: 'http://jsonapi.org/format/#crud-creating'
-      };
-
-      errors.push(hasClientProvidedIdError);
-
-      return res.status(403).json({
-        errors: errors
-      });
-    }
-
-    if (errors.length) {
-      return res.status(422).json({
-        errors: errors
-      });
-    }
-
-    next();
-  } else {
-    next();
-  }
-});
+// Validate request body for PATCH and POST requests to routes under "/api"
+app.use(JsonApiMiddlewareValidateRequestBody);
 
 // build routes
 let UserRoute = new Route(app, Models.User, Controller);
