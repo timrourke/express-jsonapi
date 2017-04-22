@@ -181,9 +181,10 @@ describe('users', () => {
           data: {
             type: 'users',
             attributes: {
-              firstName: 'Tim',
-              lastName: 'Smith',
-              email: 'tim.smith@example.com'
+              'first-name': 'Tim',
+              'last-name': 'Smith',
+              email: 'tim.smith@example.com',
+              'password-hash': 'fake password hash'
             }
           }
         })
@@ -211,9 +212,10 @@ describe('users', () => {
             type: 'users',
             id: 1,
             attributes: {
-              firstName: 'Samantha',
-              lastName: 'von Berg',
-              email: 'sammysports1@example.com'
+              'first-name': 'Samantha',
+              'last-name': 'von Berg',
+              email: 'sammysports1@example.com',
+              'password-hash': 'fake password hash'
             }
           }
         })
@@ -234,9 +236,10 @@ describe('users', () => {
 
     it('should update user', (done) => {
       server.models.user.create({
-        'firstName': 'Ronald',
-        'lastName': 'C',
-        'email': 'roncarlin@example.com'
+        firstName: 'Ronald',
+        lastName: 'C',
+        email: 'roncarlin@example.com',
+        passwordHash: 'fake password hash'
       });
 
       chai.request(server.app)
@@ -247,9 +250,10 @@ describe('users', () => {
             type: 'users',
             id: 1,
             attributes: {
-              firstName: 'Ron',
-              lastName: 'Carlin',
-              email: 'rcarlin87@wisconsinu.edu'
+              'first-name': 'Ron',
+              'last-name': 'Carlin',
+              email: 'rcarlin87@wisconsinu.edu',
+              'password-hash': 'fake password hash'
             }
           }
         })
@@ -289,9 +293,11 @@ describe('users', () => {
 
     it('should delete user', (done) => {
       server.models.user.create({
-        'firstName': 'Jerry',
-        'lastName': 'Schwarz',
-        'email': 'cubsfan25@example.edu'
+        id: 1,
+        firstName: 'Jerry',
+        lastName: 'Schwarz',
+        email: 'cubsfan25@example.edu',
+        passwordHash: 'fake password hash'
       });
 
       chai.request(server.app)

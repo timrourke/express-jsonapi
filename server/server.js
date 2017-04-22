@@ -24,6 +24,14 @@ const PORT = 3000;
 // App
 const app = express();
 
+/**
+ * Log errors
+ *
+ * @param {mixed} err An error, if any
+ * @param {Express.Request} req The Express request
+ * @param {Express.Response} res The Express response
+ * @param {Function} next The next Express handler/middleware
+ */
 function logErrors(err, req, res, next) {
   if (Array.isArray(err)) {
     err.forEach(error => {
@@ -37,15 +45,21 @@ function logErrors(err, req, res, next) {
   next(err, req, res, next);
 }
 
-function clientErrorHandler(err, req, res, next) {
+/**
+ * Render an internal server error to the client
+ *
+ * @param {mixed} err An error, if any
+ * @param {Express.Request} req The Express request
+ * @param {Express.Response} res The Express response
+ * @param {Function} next The next Express handler/middleware
+ */
+function clientErrorHandler(err, req, res, next) { //jshint ignore:line
   res.status(500).json({
     errors: [
       new InternalServerError()
     ]
   });
 }
-
-
 
 // Middleware
 app.use(helmet());

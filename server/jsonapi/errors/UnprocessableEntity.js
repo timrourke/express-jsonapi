@@ -16,6 +16,15 @@ class UnprocessableEntity extends Error {
   }
 
   /**
+   * Set the title for the error's serialized JSON
+   *
+   * @param {String} title The title to set for the error's JSON
+   */
+  setTitle(title) {
+    this.title = title;
+  }
+
+  /**
    * toJSON
    *
    * @return {Object}
@@ -23,7 +32,7 @@ class UnprocessableEntity extends Error {
   toJSON() {
     let ret = {
       status: 422,
-      title: 'Unprocessable Entity',
+      title: this.title || 'Unprocessable Entity',
       detail: this.message
     };
 

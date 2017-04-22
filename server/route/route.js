@@ -11,6 +11,7 @@ const GetListRequest = require('./../jsonapi/GetListRequest');
 const JsonApiExtractIncludedModelsAsFlatArray = require('./../jsonapi/extract-included-models-as-flat-array');
 const parseurl = require('parseurl');
 const config = require('./../config/config');
+const tryHandlingCrudError = require('./../jsonapi/errors/tryHandlingCrudError');
 
 const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*/g;
 
@@ -236,7 +237,7 @@ class Route {
    */
   handlePostRequest(req, res, next) {
     let controller = new this.controllerClass(this.model);
-    const attrs = req.body.data.attributes;
+    const attrs = convertAttrsToCamelCase(req.body.data.attributes);
 
     controller.createOne(attrs).then(newModel => {
       let links = new JsonApiResourceObjectLinks(newModel);
@@ -249,7 +250,13 @@ class Route {
           data: new JsonApiResourceObject(newModel)
         });
     }).catch(err => {
-      next(err, req, res, next);
+      tryHandlingCrudError(err, req, this.model).then(errorResponseData => {
+        res
+          .status(errorResponseData.status)
+          .json(errorResponseData.json);
+      }).catch(err => {
+        next(err, req, res, next);
+      });
     });
   }
 
@@ -262,7 +269,7 @@ class Route {
    */
   handlePatchRequest(req, res, next) {
     let controller = new this.controllerClass(this.model);
-    const attrs = req.body.data.attributes;
+    const attrs = convertAttrsToCamelCase(req.body.data.attributes);
 
     controller.updateOne(req.params.id, attrs).then(updatedModel => {
       if (!updatedModel) {
@@ -274,7 +281,13 @@ class Route {
         data: new JsonApiResourceObject(updatedModel)
       });
     }).catch(err => {
-      next(err, req, res, next);
+      tryHandlingCrudError(err, req, this.model).then(errorResponseData => {
+        res
+          .status(errorResponseData.status)
+          .json(errorResponseData.json);
+      }).catch(err => {
+        next(err, req, res, next);
+      });
     });
   }
 
@@ -354,6 +367,24 @@ function buildRelatedGetListRoutesForRelationship(route, relationship) {
     });
   });
 
+}
+
+/**
+ * Convert keynames in attributes object from dasherized to camel case
+ *
+ * @param {Object} attrs Attributes object
+ * @return {Object}
+ */
+function convertAttrsToCamelCase(attrs) {
+  let camelCaseAttrs = {};
+
+  Object.keys(attrs).forEach(keyName => {
+    let camelCaseKey = StringUtils.convertDasherizedToCamelCase(keyName);
+
+    camelCaseAttrs[camelCaseKey] = attrs[keyName];
+  });
+
+  return camelCaseAttrs;
 }
 
 /**

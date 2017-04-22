@@ -11,34 +11,46 @@ module.exports = {
   },
   firstName: {
     type: Sequelize.STRING,
-    defaultValue: false,
     allowNull: false,
     validate: {
-      notEmpty: true,
+      notEmpty: {
+        args: true,
+        msg: "User's first name is required."
+      },
     }
   },
   lastName: {
     type: Sequelize.STRING,
-    defaultValue: false,
     allowNull: false,
     validate: {
-      notEmpty: true,
+      notEmpty: {
+        args: true,
+        msg: "User's last name is required."
+      },
     }
   },
   email: {
     type: Sequelize.STRING,
-    defaultValue: false,
     allowNull: false,
     validate: {
-      isEmail: true
+      notEmpty: {
+        args: true,
+        msg: "User's email is required."
+      },
+      isEmail: {
+        args: true,
+        msg: "User's email must be a valid email address."
+      }
     }
   },
   passwordHash: {
     type: Sequelize.STRING,
-    defaultValue: false,
     allowNull: false,
     validate: {
-      notEmpty: true,
+      notEmpty: {
+        args: true,
+        msg: "User's password is required."
+      }
     }
   },
 };
