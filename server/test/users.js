@@ -190,7 +190,7 @@ describe('users', () => {
         .end((err, res) => {
           let attrs = res.body.data.attributes;
 
-          res.should.have.status(200);
+          res.should.have.status(201);
           res.body.data.type.should.be.eql('users');
           attrs.email.should.be.eql('tim.smith@example.com');
           attrs['first-name'].should.be.eql('Tim');

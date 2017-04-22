@@ -190,7 +190,7 @@ Object.keys(models).forEach(modelName => {
             }
           })
           .end((err, res) => {
-            res.should.have.status(200);
+            res.should.have.status(201);
             res.body.data.type.should.be.eql(modelType);
             res.body.data.id.should.be.eql('1');
 
@@ -255,6 +255,21 @@ Object.keys(models).forEach(modelName => {
           .end((err, res) => {
             res.should.have.status(422);
             res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
+      it(`should throw 422 when \`data.id\` and \`data.type\` members do not exist`, (done) => {
+        chai.request(server.app)
+          .patch(`/api/${modelType}/1`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({
+            data: {}
+          })
+          .end((err, res) => {
+            res.should.have.status(422);
+            res.body.errors.length.should.be.eql(2);
 
             done();
           });

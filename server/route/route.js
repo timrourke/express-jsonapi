@@ -243,14 +243,13 @@ class Route {
 
       res
         .location(links.links.self)
+        .status(201)
         .json({
           links: links,
           data: new JsonApiResourceObject(newModel)
         });
     }).catch(err => {
-      console.log(typeof err[0].errors[0]);
-      res.json(err);
-      //next(err, req, res, next);
+      next(err, req, res, next);
     });
   }
 
