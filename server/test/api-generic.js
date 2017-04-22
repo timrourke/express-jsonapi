@@ -136,6 +136,21 @@ Object.keys(models).forEach(modelName => {
           });
       });
 
+      it(`should throw 422 when \`data.type\` member does not exist`, (done) => {
+        chai.request(server.app)
+          .post(`/api/${modelType}`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({
+            data: {}
+          })
+          .end((err, res) => {
+            res.should.have.status(422);
+            res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
       it(`should throw 403 when \`id\` member is defined by client`, (done) => {
         chai.request(server.app)
           .post(`/api/${modelType}`)
@@ -203,6 +218,40 @@ Object.keys(models).forEach(modelName => {
           .patch(`/api/${modelType}/1`)
           .set('Content-Type', 'application/vnd.api+json')
           .send({})
+          .end((err, res) => {
+            res.should.have.status(422);
+            res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
+      it(`should throw 422 when \`data.type\` member does not exist`, (done) => {
+        chai.request(server.app)
+          .patch(`/api/${modelType}/1`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({
+            data: {
+              id: 1
+            }
+          })
+          .end((err, res) => {
+            res.should.have.status(422);
+            res.body.errors.length.should.be.eql(1);
+
+            done();
+          });
+      });
+
+      it(`should throw 422 when \`data.id\` member does not exist`, (done) => {
+        chai.request(server.app)
+          .patch(`/api/${modelType}/1`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .send({
+            data: {
+              type: modelType
+            }
+          })
           .end((err, res) => {
             res.should.have.status(422);
             res.body.errors.length.should.be.eql(1);
