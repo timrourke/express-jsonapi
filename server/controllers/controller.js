@@ -1,7 +1,5 @@
 'use strict';
 
-const StringUtils = require('./../utils/String');
-
 class Controller {
 
   /**
@@ -55,8 +53,8 @@ class Controller {
     return new Promise((resolve, reject) => {
       this.model.create(attrs).then(newModel => {
         resolve(newModel);
-      }).catch(function() {
-        reject(arguments);
+      }).catch(function(err) {
+        reject(err);
       });
     });
   }
@@ -76,15 +74,7 @@ class Controller {
           return resolve(null);
         }
 
-        let newAttrs = {};
-
-        Object.keys(attrs).forEach(keyName => {
-          let camelCaseKey = StringUtils.convertDasherizedToCamelCase(keyName);
-
-          newAttrs[camelCaseKey] = attrs[keyName];
-        });
-
-        foundModel.update(newAttrs).then(updatedModel => {
+        foundModel.update(attrs).then(updatedModel => {
           resolve(updatedModel);
         }).catch(function() {
           reject(arguments);
