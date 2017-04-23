@@ -38,5 +38,19 @@ describe('jsonapi/errors/UnprocessableEntity', () => {
 
       JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
     });
+
+    it('should serialize with title if provided', () => {
+      let actual = new UnprocessableEntity('The thing is incorrect');
+
+      actual.setTitle('new title here');
+
+      let expected = {
+        status: 422,
+        title: 'new title here',
+        detail: 'The thing is incorrect',
+      };
+
+      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+    });
   });
 });
