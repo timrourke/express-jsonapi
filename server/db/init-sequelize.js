@@ -26,7 +26,11 @@ function buildConnectionString(env = 'development') {
  * @return {Sequelize}
  */
 function initSequelize() {
-  return new Sequelize(buildConnectionString(process.env.NODE_ENV));
+  const shouldLogQueries = dbConfig[process.env.NODE_ENV].logging;
+
+  return new Sequelize(buildConnectionString(process.env.NODE_ENV), {
+    logging: shouldLogQueries
+  });
 }
 
 module.exports = initSequelize;
