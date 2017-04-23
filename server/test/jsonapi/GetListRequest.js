@@ -9,6 +9,20 @@ chai.should();
 
 describe('jsonapi/GetListRequest', () => {
   describe('#constructor()', () => {
+    it('should parse request without params', (done) => {
+      let request = new GetListRequest({});
+
+      request.validate().then(actual => {
+        actual.should.be.eql({
+          limit: 20,
+          offset: 0,
+          include: []
+        });
+
+        done();
+      });
+    });
+
     it('should parse include param', () => {
       let request = new GetListRequest({
         query: {
