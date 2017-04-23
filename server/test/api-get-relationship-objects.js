@@ -23,6 +23,28 @@ Object.keys(models).forEach(modelName => {
       ]).then(() => done());
     });
 
+    it(`should throw 404 when visiting relationships url without specifying relationship`, (done) => {
+      chai.request(server.app)
+        .get(`/api/${model.getType()}/1/relationships`)
+        .set('Content-Type', 'application/vnd.api+json')
+        .end((err, res) => {
+          res.should.have.status(404);
+
+          done();
+        });
+    });
+
+    it(`should throw 404 when visiting relationships url for non-existent relationship`, (done) => {
+      chai.request(server.app)
+        .get(`/api/${model.getType()}/1/relationships/xxcvbxcvnvxcn`)
+        .set('Content-Type', 'application/vnd.api+json')
+        .end((err, res) => {
+          res.should.have.status(404);
+
+          done();
+        });
+    });
+
     Object.keys(model.associations).forEach(associationName => {
 
       describe(`GET /api/${model.getType()}/:id/relationships/${associationName}`, () => {
