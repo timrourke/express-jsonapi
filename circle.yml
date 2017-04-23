@@ -10,7 +10,7 @@ dependencies:
 
 database:
   override:
-    - mysql -u root -e "CREATE DATABASE `jsonapi_test`"
+    - mysql -u root -e "CREATE DATABASE jsonapi_test"
 
 test:
   override:
