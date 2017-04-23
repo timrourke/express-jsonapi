@@ -19,10 +19,10 @@ test:
           server
         environment:
           NODE_ENV: test
-          MOCHA_FILE: $CIRCLE_ARTIFACTS/test-results.xml
     - npm test:
         pwd:
           server
         environment:
           NODE_ENV: test
+          MOCHA_FILE: $CIRCLE_ARTIFACTS/test-results.xml
 
