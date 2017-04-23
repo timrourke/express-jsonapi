@@ -5,16 +5,19 @@ machine:
 dependencies:
   override:
     - yarn install:
-      pwd: server
+        pwd:
+          server
 
 test:
   override:
     - node_modules/.bin/sequelize db:migrate:
-      pwd: server
-      environment:
-        NODE_ENV: test
+        pwd:
+          server
+        environment:
+          NODE_ENV: test
     - npm test:
-      pwd: server
-      environment:
-        NODE_ENV: test
+        pwd:
+          server
+        environment:
+          NODE_ENV: test
 
