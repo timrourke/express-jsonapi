@@ -16,8 +16,37 @@ describe('jsonapi/GetListRequest', () => {
         actual.should.be.eql({
           limit: 20,
           offset: 0,
-          include: []
+          include: [],
+          order: []
         });
+
+        done();
+      });
+    });
+
+    it('should parse sort param', (done) => {
+      let request = new GetListRequest({
+        query: {
+          sort: 'foo,-bar,-hooty-hoo,baz,seventy-three'
+        }
+      }, {
+        attributes: [
+          'foo',
+          'bar',
+          'hootyHoo',
+          'baz',
+          'seventyThree'
+        ]
+      });
+
+      request.validate().then(actual => {
+        actual.order.should.be.eql([
+          ['foo', 'ASC'],
+          ['bar', 'DESC'],
+          ['hootyHoo', 'DESC'],
+          ['baz', 'ASC'],
+          ['seventyThree', 'ASC']
+        ]);
 
         done();
       });

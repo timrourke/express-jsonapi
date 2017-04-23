@@ -1,6 +1,7 @@
 'use strict';
 
 const BadRequest = require('./errors/BadRequest');
+const StringUtils = require('./../utils/String');
 
 /**
  * Parses the JSON API include param and builds a multidimensional graph of
@@ -75,6 +76,45 @@ function parsePagination(queryParams) {
 }
 
 /**
+ * Parse the query params for sorting
+ *
+ * @param {Object} queryParams Request query params
+ * @return {Array}
+ */
+function parseSort(queryParams) {
+  if (!queryParams.hasOwnProperty('sort')) {
+    return [];
+  }
+
+  return queryParams.sort
+    .split(',')
+    .map(attrName => {
+      let direction = 'ASC';
+
+      if (attrName.indexOf('-') === 0) {
+        direction = 'DESC';
+        attrName = attrName.slice(1);
+      }
+
+      return [attrName, direction];
+    });
+}
+
+/**
+ * Build a BadRequest error for an invalid sort param.
+ *
+ * @return {BadRequest}
+ */
+function buildSortErrorInvalidAttr(attrName) {
+  let msg = `Cannot sort by "${attrName}". The resource does not have an attribute called "${attrName}"`;
+  let error = new BadRequest(msg);
+
+  error.setSource('sort');
+
+  return error;
+}
+
+/**
  * Build a BadRequest error for invalid pagination params, when the mutually
  * exclusive params "page[offset]" and "page[number]" are both defined.
  *
@@ -121,7 +161,6 @@ function buildPaginationErrIsNaN(pageParam, invalidValue) {
   return error;
 }
 
-
 /**
  * Build a BadRequest error for invalid pagination params, when a pagination
  * param is lower than the minimum required number.
@@ -153,6 +192,8 @@ class GetListRequest {
       req.query :
       {};
 
+    this.model = model;
+
     this.errors = [];
 
     this.sequelizeQueryParams = {};
@@ -161,7 +202,7 @@ class GetListRequest {
 
     this.pagination = parsePagination(queryParams);
 
-    this.model = model;
+    this.orders = parseSort(queryParams);
   }
 
   /**
@@ -174,6 +215,8 @@ class GetListRequest {
       this.errors = this.errors.concat(this.validateIncludes());
 
       this.errors = this.errors.concat(this.validatePagination());
+
+      this.errors = this.errors.concat(this.validateSorts());
 
       if (this.errors.length) {
         reject(this.errors);
@@ -300,6 +343,31 @@ class GetListRequest {
     Object.assign(this.sequelizeQueryParams, {
       limit: limit,
       offset: offset
+    });
+
+    return errors;
+  }
+
+  /**
+   * Validate sorts
+   *
+   * @return {Array} Array of errors, if any
+   */
+  validateSorts() {
+    let errors = [];
+    let sorts = this.orders.map(sort => {
+      let [attrName, direction] = sort;
+      let columnName = StringUtils.convertDasherizedToCamelCase(attrName);
+
+      if (this.model.attributes && !this.model.attributes.hasOwnProperty(columnName)) {
+        errors.push(buildSortErrorInvalidAttr(attrName));
+      }
+
+      return [columnName, direction];
+    });
+
+    Object.assign(this.sequelizeQueryParams, {
+      order: sorts
     });
 
     return errors;
