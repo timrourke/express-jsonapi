@@ -37,6 +37,7 @@
     "chai-http": "^3.0.0",
     "faker": "^4.1.0",
     "mocha": "^3.2.0",
+    "mocha-junit-reporter": "^1.13.0",
     "nyc": "^10.2.0",
     "rosie": "^1.6.0"
   }
