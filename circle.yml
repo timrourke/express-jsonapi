@@ -6,18 +6,18 @@ dependencies:
   override:
     - yarn install:
       pwd:
-        server
+        ~/jsonapi/server
 
 test:
   override:
     - node_modules/.bin/sequelize db:migrate:
       pwd:
-        server
+        ~/jsonapi/server
       environment:
         NODE_ENV: test
     - npm test:
       pwd:
-        server
+        ~/jsonapi/server
       environment:
         NODE_ENV: test
 
