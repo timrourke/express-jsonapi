@@ -30,13 +30,13 @@ describe('jsonapi/GetListRequest', () => {
           sort: 'foo,-bar,-hooty-hoo,baz,seventy-three'
         }
       }, {
-        attributes: [
-          'foo',
-          'bar',
-          'hootyHoo',
-          'baz',
-          'seventyThree'
-        ]
+        attributes: {
+          foo: true,
+          bar: true,
+          hootyHoo: true,
+          baz: true,
+          seventyThree: true
+        }
       });
 
       request.validate().then(actual => {
