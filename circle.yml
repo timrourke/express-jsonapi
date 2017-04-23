@@ -1,0 +1,23 @@
+machine:
+  node:
+    version: 6.10.2
+
+dependencies:
+  override:
+    - yarn install:
+      pwd:
+        server
+
+test:
+  override:
+    - node_modules/.bin/sequelize db:migrate:
+      pwd:
+        server
+      environment:
+        NODE_ENV: test
+    - npm test:
+      pwd:
+        server
+      environment:
+        NODE_ENV: test
+
