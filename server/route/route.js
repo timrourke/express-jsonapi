@@ -250,7 +250,7 @@ class Route {
           data: new JsonApiResourceObject(newModel)
         });
     }).catch(err => {
-      tryHandlingCrudError(err, req, this.model).then(errorResponseData => {
+      tryHandlingCrudError(err, this.model).then(errorResponseData => {
         res
           .status(errorResponseData.status)
           .json(errorResponseData.json);
@@ -281,7 +281,7 @@ class Route {
         data: new JsonApiResourceObject(updatedModel)
       });
     }).catch(err => {
-      tryHandlingCrudError(err, req, this.model).then(errorResponseData => {
+      tryHandlingCrudError(err, this.model).then(errorResponseData => {
         res
           .status(errorResponseData.status)
           .json(errorResponseData.json);
