@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node_modules/.bin/sequelize db:migrate && NODE_ENV=production node server.js",
-    "test": "NODE_ENV=test nyc node_modules/.bin/mocha",
+    "test": "NODE_ENV=test nyc node_modules/.bin/mocha --reporter mocha-junit-reporter --reporter spec",
     "testnonyc": "NODE_ENV=test node_modules/.bin/mocha"
   },
   "dependencies": {
