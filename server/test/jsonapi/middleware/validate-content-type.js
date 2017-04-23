@@ -1,10 +1,12 @@
+'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('./../../../server');
-const should = chai.should();
 
+chai.should();
 chai.use(chaiHttp);
 
 describe('jsonapi middleware', () => {
@@ -23,6 +25,27 @@ describe('jsonapi middleware', () => {
               "detail": "Media type parameters or modifications to JSON API Content-Type header not supported (\"application/vnd.api+json; version=2.3\")",
               "links": {
                 "about": "http://jsonapi.org/format/#content-negotiation-clients"
+              }
+            }]
+          });
+
+          done();
+        });
+    });
+
+    it('should throw 400 when Content-Type header is not set', (done) => {
+      chai.request(server.app)
+        .get('/api/users')
+        .end((err, res) => {
+          res.should.have.status(400);
+
+          res.body.should.be.eql({
+            errors: [{
+              status: 400,
+              title: 'Bad Request',
+              detail: 'Unsupported value for Content-Type header ("")',
+              links: {
+                about: 'http://jsonapi.org/format/#content-negotiation-clients'
               }
             }]
           });
