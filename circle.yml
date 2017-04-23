@@ -8,6 +8,10 @@ dependencies:
         pwd:
           server
 
+database:
+  override:
+    - mysql -u root -e "CREATE DATABASE `jsonapi_test`"
+
 test:
   override:
     - node_modules/.bin/sequelize db:migrate:
