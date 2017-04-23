@@ -24,6 +24,34 @@ describe('jsonapi/GetListRequest', () => {
       });
     });
 
+    it('should reject with errors if sorted with invalid attributes', (done) => {
+      let request = new GetListRequest({
+        query: {
+          sort: 'this-attr-is-invalid'
+        }
+      }, {
+        attributes: {
+          foo: true,
+          bar: true
+        }
+      });
+
+      request.validate().then(actual => {
+        JSON.stringify(actual).should.be.eql({
+          errors: [{
+            status: 400,
+            title: 'Bad Request',
+            detail: 'Cannot sort by "this-attr-is-invalid". The resource does not have an attribute called "this-attr-is-invalid".',
+            source: {
+              parameter: 'sort'
+            }
+          }]
+        });
+      });
+
+      done();
+    });
+
     it('should parse sort param', (done) => {
       let request = new GetListRequest({
         query: {
