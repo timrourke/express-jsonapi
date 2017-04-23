@@ -19,7 +19,7 @@ test:
           server
         environment:
           NODE_ENV: test
-    - npm test:
+    - npm test && node_modules/.bin/nyc report --reporter=text-lcov | node_modules/.bin/coveralls:
         pwd:
           server
         environment:
