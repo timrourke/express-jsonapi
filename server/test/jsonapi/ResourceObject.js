@@ -44,7 +44,45 @@ function ModelInstanceStub() {
 
 describe('jsonapi/ResourceObject', () => {
   describe('#toJSON()', () => {
-    it('should convert to JSON API-compliant JSON', () => {
+    it('should convert to JSON API-compliant JSON without associations key', () => {
+      let modelWithoutAssocs = new ModelInstanceStub();
+      delete modelWithoutAssocs.Model.associations;
+
+      let resource = new ResourceObject(modelWithoutAssocs);
+      let actual = JSON.stringify(resource);
+      let expected = {
+        type: 'mocked-model-instances',
+        id: '34672',
+        attributes: {
+          'foo': 'foo value',
+          'bar-thing': 'barThing value',
+          'baz-item': 'bazItem value'
+        },
+      };
+
+      actual.should.be.eql(JSON.stringify(expected));
+    });
+
+    it('should convert to JSON API-compliant JSON with no associations', () => {
+      let modelWithoutAssocs = new ModelInstanceStub();
+      modelWithoutAssocs.Model.associations = {};
+
+      let resource = new ResourceObject(modelWithoutAssocs);
+      let actual = JSON.stringify(resource);
+      let expected = {
+        type: 'mocked-model-instances',
+        id: '34672',
+        attributes: {
+          'foo': 'foo value',
+          'bar-thing': 'barThing value',
+          'baz-item': 'bazItem value'
+        },
+      };
+
+      actual.should.be.eql(JSON.stringify(expected));
+    });
+
+    it('should convert to JSON API-compliant JSON with associations', () => {
       let resource = new ResourceObject(new ModelInstanceStub());
       let actual = JSON.stringify(resource);
       let expected = {
