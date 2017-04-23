@@ -1,8 +1,11 @@
+'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const should = chai.should();
 const BadRequest = require('./../../../jsonapi/errors/BadRequest');
+
+chai.should();
 
 describe('jsonapi/errors/BadRequest', () => {
   describe('#toJSON()', () => {
