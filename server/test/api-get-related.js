@@ -15,7 +15,7 @@ const models = server.models;
 Object.keys(models).forEach(modelName => {
   let model = models[modelName];
 
-  describe(`API - generic test for getting relationship objects for the model ${model.getType()}`, () => {
+  describe(`API - generic test for getting objects related to model ${model.getType()}`, () => {
     afterEach((done) => {
       Promise.all([
         server.db.query('TRUNCATE users'),
@@ -23,20 +23,9 @@ Object.keys(models).forEach(modelName => {
       ]).then(() => done());
     });
 
-    it(`should throw 404 when visiting relationships url without specifying relationship`, (done) => {
+    it(`should throw 404 when visiting relateds url for non-existent relationship`, (done) => {
       chai.request(server.app)
-        .get(`/api/${model.getType()}/1/relationships`)
-        .set('Content-Type', 'application/vnd.api+json')
-        .end((err, res) => {
-          res.should.have.status(404);
-
-          done();
-        });
-    });
-
-    it(`should throw 404 when visiting relationships url for non-existent relationship`, (done) => {
-      chai.request(server.app)
-        .get(`/api/${model.getType()}/1/relationships/xxcvbxcvnvxcn`)
+        .get(`/api/${model.getType()}/1/ghhhsdf3sfdh`)
         .set('Content-Type', 'application/vnd.api+json')
         .end((err, res) => {
           res.should.have.status(404);
@@ -47,8 +36,8 @@ Object.keys(models).forEach(modelName => {
 
     Object.keys(model.associations).forEach(associationName => {
 
-      describe(`GET /api/${model.getType()}/:id/relationships/${associationName}`, () => {
-        it('should fetch the correct number of relationship objects', (done) => {
+      describe(`GET /api/${model.getType()}/:id/${associationName}`, () => {
+        it('should fetch the correct related objects', (done) => {
           let parentModelDef = Factory.build(modelName, {id: 1});
 
           model.create(parentModelDef).then(parentModelInstance => {
@@ -56,8 +45,8 @@ Object.keys(models).forEach(modelName => {
 
             if (assocUnderTest.isMultiAssociation) {
 
-              // Test getting relationship objects for a many relationship
-              testGettingRelationshipObjectsMany(
+              // Test getting related objects for a many relationship
+              testGettingRelatedObjectsMany(
                 associationName,
                 model,
                 modelName,
@@ -69,8 +58,8 @@ Object.keys(models).forEach(modelName => {
 
             } else {
 
-              // Test getting relationship objects for a single relationship
-              testGettingRelationshipObjectsSingle(
+              // Test getting related objects for a single relationship
+              testGettingRelatedObjectsSingle(
                 associationName,
                 model,
                 modelName,
@@ -90,7 +79,7 @@ Object.keys(models).forEach(modelName => {
 });
 
 /**
- * Test getting relationship objects for a relationship for a single
+ * Test getting related objects for a relationship for a single
  * relation association
  *
  * @param {String} associationName Name of the association
@@ -100,7 +89,7 @@ Object.keys(models).forEach(modelName => {
  * @param {Sequelize.Instance} parentModelInstance Parent model instance
  * @return {Promise}
  */
-function testGettingRelationshipObjectsSingle(
+function testGettingRelatedObjectsSingle(
   associationName,
   model,
   modelName,
@@ -115,7 +104,7 @@ function testGettingRelationshipObjectsSingle(
     assocModel.create(assocModelDef).then(inst => {
       parentModelInstance[assocUnderTest.accessors.set](inst).then(() => {
         chai.request(server.app)
-          .get(`/api/${model.getType()}/1/relationships/${associationName}`)
+          .get(`/api/${model.getType()}/1/${associationName}`)
           .set('Content-Type', 'application/vnd.api+json')
           .end((err, res) => {
             res.should.have.status(200);
@@ -130,7 +119,7 @@ function testGettingRelationshipObjectsSingle(
 }
 
 /**
- * Test getting relationship objects for a relationship for a multiple
+ * Test getting related objects for a relationship for a multiple
  * relation association
  *
  * @param {String} associationName Name of the association
@@ -140,7 +129,7 @@ function testGettingRelationshipObjectsSingle(
  * @param {Sequelize.Instance} parentModelInstance Parent model instance
  * @return {Promise}
  */
-function testGettingRelationshipObjectsMany(
+function testGettingRelatedObjectsMany(
   associationName,
   model,
   modelName,
@@ -160,13 +149,13 @@ function testGettingRelationshipObjectsMany(
 
       Promise.all(relateToParentPromises).then(() => {
         chai.request(server.app)
-          .get(`/api/${model.getType()}/1/relationships/${associationName}`)
+          .get(`/api/${model.getType()}/1/${associationName}`)
           .set('Content-Type', 'application/vnd.api+json')
           .end((err, res) => {
             res.should.have.status(200);
             res.body.data.length.should.be.eql(3);
-            res.body.data.forEach(resourceIdentifierObject => {
-              resourceIdentifierObject.type.should.be.eql(assocModel.getType());
+            res.body.data.forEach(resourceObject => {
+              resourceObject.type.should.be.eql(assocModel.getType());
             });
 
             resolve();
