@@ -14,7 +14,7 @@
     "url": "https://timrourke.com"
   },
   "scripts": {
-    "start": "NODE_ENV=production node_modules/.bin/sequelize db:migrate --config ./src/config/database.json && NODE_ENV=production node ./src/server.js",
+    "start": "NODE_ENV=production node_modules/.bin/sequelize db:migrate --config ./src/config/database.json --migrations-path ./src/db/migrations && NODE_ENV=production node ./src/server.js",
     "test": "NODE_ENV=test node_modules/.bin/nyc node_modules/.bin/mocha $(find src/test -name '*.test.js') --reporter mocha-junit-reporter --reporter spec",
     "testnonyc": "NODE_ENV=test node_modules/.bin/mocha ./src"
   },
