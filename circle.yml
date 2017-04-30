@@ -4,9 +4,8 @@ machine:
 
 dependencies:
   override:
-    - yarn install:
-        pwd:
-          server
+    - yarn install
+    - node_modules/.bin/gulp
 
 database:
   override:
@@ -14,14 +13,10 @@ database:
 
 test:
   override:
-    - node_modules/.bin/sequelize db:migrate:
-        pwd:
-          server
+    - node_modules/.bin/sequelize db:migrate --config dist/config/database.json --migrations-path dist/db/migrations:
         environment:
           NODE_ENV: test
     - npm test && node_modules/.bin/nyc report --reporter=text-lcov | node_modules/.bin/coveralls:
-        pwd:
-          server
         environment:
           NODE_ENV: test
           MOCHA_FILE: $CIRCLE_ARTIFACTS/test-results.xml

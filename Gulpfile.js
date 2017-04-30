@@ -49,3 +49,8 @@ gulp.task('watch', function() {
   console.log('Watching for changes');
   gulp.watch('./src/**/*.*', ['copy', 'typescript']);
 });
+
+gulp.task('default', function() {
+  compileTypescript();
+  copyOtherFiles();
+});
