@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const UnprocessableEntity = require('./../../../jsonapi/errors/UnprocessableEntity');
+import UnprocessableEntity from './../../../jsonapi/errors/UnprocessableEntity';
 
 chai.should();
 

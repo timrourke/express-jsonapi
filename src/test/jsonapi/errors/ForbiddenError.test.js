@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const ForbiddenError = require('./../../../jsonapi/errors/ForbiddenError');
+import ForbiddenError from './../../../jsonapi/errors/ForbiddenError';
 
 chai.should();
 
