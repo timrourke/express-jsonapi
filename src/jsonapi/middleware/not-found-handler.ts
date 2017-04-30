@@ -1,6 +1,6 @@
 'use strict';
 
-const NotFoundError = require('./../errors/NotFoundError');
+import NotFoundError from './../errors/NotFoundError';
 import config from './../../config/config';
 import { NextFunction, Request, Response } from 'express';
 

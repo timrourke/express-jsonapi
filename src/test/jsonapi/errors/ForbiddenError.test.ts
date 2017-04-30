@@ -35,13 +35,17 @@ describe('jsonapi/errors/ForbiddenError', () => {
     it('should serialize to correct JSON with links and source', () => {
       let actual = new ForbiddenError('ew gross no');
       actual.setPointer('spork');
-      actual.links = 'yodletown';
+      actual.links = {
+        about: 'yodletown'
+      };
 
       let expected = {
         status: 403,
         title: 'Forbidden',
         detail: 'ew gross no',
-        links: 'yodletown',
+        links: {
+          about: 'yodletown'
+        },
         source: {
           pointer: 'spork'
         }

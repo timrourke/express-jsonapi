@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const BadRequest = require('./../../../jsonapi/errors/BadRequest');
+import BadRequest from './../../../jsonapi/errors/BadRequest';
 
 chai.should();
 

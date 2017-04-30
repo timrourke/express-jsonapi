@@ -31,7 +31,7 @@ function compileTypescript() {
 
 function copyOtherFiles() {
   console.log('Copying files');
-  return gulp.src(['./src/**/(!*.ts)'])
+  return gulp.src(['./src/**/!(*.ts)'])
     .pipe(gulp.dest('./dist'));
 }
 

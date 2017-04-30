@@ -1,6 +1,8 @@
 'use strict';
 
-const BadRequest = require('./errors/BadRequest');
+import { Model } from 'sequelize';
+import { Request, Response, NextFunction } from 'express';
+import BadRequest from './errors/BadRequest';
 const StringUtils = require('./../utils/String');
 
 /**
@@ -29,7 +31,7 @@ const StringUtils = require('./../utils/String');
  * @param {String} includeParam The JSON API include param
  * @return {Object}
  */
-function parseInclude(includeParam = "") {
+function parseInclude(includeParam = ""): any {
   if (!includeParam) {
     return {};
   }
@@ -64,7 +66,7 @@ function parseInclude(includeParam = "") {
  * @param {Object} queryParams Request query params
  * @return {Object}
  */
-function parsePagination(queryParams) {
+function parsePagination(queryParams: any): any {
   if (!queryParams.hasOwnProperty('page')) {
     return {
       offset: 0,
@@ -81,7 +83,7 @@ function parsePagination(queryParams) {
  * @param {Object} queryParams Request query params
  * @return {Array}
  */
-function parseSort(queryParams) {
+function parseSort(queryParams: any): Array<Array<string>> {
   if (!queryParams.hasOwnProperty('sort')) {
     return [];
   }
@@ -103,9 +105,10 @@ function parseSort(queryParams) {
 /**
  * Build a BadRequest error for an invalid sort param.
  *
+ * @param {String} attrName The attribute name that caused the error
  * @return {BadRequest}
  */
-function buildSortErrorInvalidAttr(attrName) {
+function buildSortErrorInvalidAttr(attrName: string): BadRequest {
   let msg = `Cannot sort by "${attrName}". The resource does not have an attribute called "${attrName}"`;
   let error = new BadRequest(msg);
 
@@ -120,7 +123,7 @@ function buildSortErrorInvalidAttr(attrName) {
  *
  * @return {BadRequest}
  */
-function buildPaginationErrHasOffsetAndNumber() {
+function buildPaginationErrHasOffsetAndNumber(): BadRequest {
   let msg = `Invalid pagination strategy. Use of "page[number]" and "page[offset]" as pagination params are mutually exclusive. Please use one or the other.`;
   let error = new BadRequest(msg);
 
@@ -135,7 +138,7 @@ function buildPaginationErrHasOffsetAndNumber() {
  *
  * @return {BadRequest}
  */
-function buildPaginationErrHasLimitAndSize() {
+function buildPaginationErrHasLimitAndSize(): BadRequest {
   let msg = `Invalid pagination strategy. Use of "page[limit]" and "page[size]" as pagination params are mutually exclusive. Please use one or the other.`;
   let error = new BadRequest(msg);
 
@@ -152,7 +155,7 @@ function buildPaginationErrHasLimitAndSize() {
  * @param {Mixed} invalidValue The invalid value for the invalid query param
  * @return {BadRequest}
  */
-function buildPaginationErrIsNaN(pageParam, invalidValue) {
+function buildPaginationErrIsNaN(pageParam: string, invalidValue: any): BadRequest {
   let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must be a number.`;
   let error = new BadRequest(msg);
 
@@ -170,7 +173,7 @@ function buildPaginationErrIsNaN(pageParam, invalidValue) {
  * @param {String} minimum The string describing the minimum required number
  * @return {BadRequest}
  */
-function buildPaginationErrOffsetLessThanMin(pageParam, invalidValue, minimum) {
+function buildPaginationErrOffsetLessThanMin(pageParam: string, invalidValue: any, minimum: string): BadRequest {
   let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must not be a number lower than ${minimum}.`;
   let error = new BadRequest(msg);
 
@@ -180,6 +183,49 @@ function buildPaginationErrOffsetLessThanMin(pageParam, invalidValue, minimum) {
 }
 
 class GetListRequest {
+
+  /**
+   * Array of errors, if any.
+   * 
+   * @var {Mixed[]}
+   */
+  errors: Array<any>;
+
+  /**
+   * Include tree
+   * 
+   * @var {Object}
+   */
+  include: any;
+
+  /**
+   * Sequelize Model for this request
+   * 
+   * @var {Sequelize.Model}
+   */
+  model: Model<any, any>;
+
+  /**
+   * Array of orders, where each element is a tuple containing the attr name and the sort direction
+   * 
+   * @var {Array[]}
+   */
+  orders: Array<Array<string>>;
+
+  /**
+   * Pagination constraints for query
+   * 
+   * @var {Object}
+   */
+  pagination: any;
+
+  /**
+   * Sequelize query params to set query constraints
+   * 
+   * @var {Object}
+   */
+  sequelizeQueryParams: any;
+
   /**
    * Constructor.
    *
@@ -187,7 +233,7 @@ class GetListRequest {
    * @param {Express.Request} req Express request object
    * @param {Sequelize.Model} model The Sequelize model definition
    */
-  constructor(req, model) {
+  constructor(req: Request, model: Model<any, any>) {
     let queryParams = (req.hasOwnProperty('query')) ?
       req.query :
       {};
@@ -324,7 +370,7 @@ class GetListRequest {
         }
 
       offset = (hasNumber) ?
-        parseInt((this.pagination.number * limit) - limit, 10) :
+        (parseInt(this.pagination.number, 10) * limit) - limit :
         0;
 
         if (isNaN(offset)) {
@@ -388,7 +434,7 @@ function validateSingleInclude(parent, currentModel, includeStatement, errors) {
   // to validate and build a query object for it
   Object.keys(parent).forEach(child => {
     if (currentModel.associations.hasOwnProperty(child)) {
-      let includeObj = {};
+      let includeObj: any = {};
       includeObj.model = currentModel.associations[child].target;
       includeStatement.include = includeStatement.include || [];
       includeStatement.include.push(includeObj);

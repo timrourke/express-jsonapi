@@ -2,7 +2,7 @@
 
 import * as Express from 'express';
 
-const BadRequest = require('./../errors/BadRequest');
+import BadRequest from './../errors/BadRequest';
 
 /**
  * Build an error object for an unsupported media type.

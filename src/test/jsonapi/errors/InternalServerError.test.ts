@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const InternalServerError = require('./../../../jsonapi/errors/InternalServerError');
+import InternalServerError from './../../../jsonapi/errors/InternalServerError';
 
 chai.should();
 

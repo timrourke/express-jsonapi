@@ -24,13 +24,17 @@ describe('jsonapi/errors/UnprocessableEntity', () => {
     it('should serialize to correct JSON with links and source', () => {
       let actual = new UnprocessableEntity('Hooowhee that thing is BROKE');
       actual.setPointer('/things/other-things/this-one');
-      actual.links = 'linkz r kewl';
+      actual.links = {
+        about: 'linkz r kewl'
+      };
 
       let expected = {
         status: 422,
         title: 'Unprocessable Entity',
         detail: 'Hooowhee that thing is BROKE',
-        links: 'linkz r kewl',
+        links: {
+          about: 'linkz r kewl'
+        },
         source: {
           pointer: '/things/other-things/this-one'
         }
