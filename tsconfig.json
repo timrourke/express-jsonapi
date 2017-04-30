@@ -4,9 +4,6 @@
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
-        "lib": ["es6"],
-        "files": [
-          "typings/index.d.ts"
-        ]
+        "lib": ["es6"]
     }
 }
