@@ -19,7 +19,7 @@ import {
   Response 
 } from 'express';
 import Controller, { ControllerConstructor } from './../controllers/controller';
-const tryHandlingCrudError = require('./../jsonapi/errors/tryHandlingCrudError');
+import tryHandlingCrudError from './../jsonapi/errors/tryHandlingCrudError';
 
 const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*/g;
 
@@ -284,7 +284,7 @@ class Route {
           data: new JsonApiResourceObject(newModel)
         });
     }).catch(err => {
-      tryHandlingCrudError(err, this.model).then(errorResponseData => {
+      tryHandlingCrudError(err, this.model).then((errorResponseData: any) => {
         res
           .status(errorResponseData.status)
           .json(errorResponseData.json);
@@ -315,7 +315,7 @@ class Route {
         data: new JsonApiResourceObject(updatedModel)
       });
     }).catch(err => {
-      tryHandlingCrudError(err, this.model).then(errorResponseData => {
+      tryHandlingCrudError(err, this.model).then((errorResponseData: any) => {
         res
           .status(errorResponseData.status)
           .json(errorResponseData.json);

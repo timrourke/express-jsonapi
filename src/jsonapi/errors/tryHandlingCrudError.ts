@@ -1,6 +1,6 @@
 'use strict';
 
-const Sequelize = require('sequelize');
+import { Error as SequelizeError, Model, ValidationError } from 'sequelize';
 import UnprocessableEntity from './UnprocessableEntity';
 const StringUtils = require('./../../utils/String');
 const titleize = require('inflection').titleize;
@@ -13,7 +13,7 @@ const underscore = require('inflection').underscore;
  * @param {String} modelName Name of the model the error was thrown for
  * @return {UnprocessableEntity}
  */
-function buildValidationError(sequelizeErrorItem, modelName) {
+function buildValidationError(sequelizeErrorItem, modelName: string): UnprocessableEntity {
   let modelTitle = titleize(underscore(modelName));
   let attr = StringUtils.convertCamelToDasherized(
     sequelizeErrorItem.path
@@ -47,13 +47,13 @@ function buildValidationError(sequelizeErrorItem, modelName) {
  * @param {Sequelize.Model} model Model the error was thrown for
  * @return {Promise}
  */
-function tryHandlingCrudError(err, model) {
+export default function tryHandlingCrudError(err: any, model: Model<any, any>) {
   return new Promise((resolve, reject) => {
-    if (!(err instanceof Sequelize.Error)) {
+    if (!(err instanceof SequelizeError)) {
       return reject(err);
     }
 
-    if (err instanceof Sequelize.ValidationError) {
+    if (err instanceof ValidationError) {
       let errors = err.errors.map(sequelizeErrorItem => {
         return buildValidationError(sequelizeErrorItem, model.name);
       });
@@ -69,5 +69,3 @@ function tryHandlingCrudError(err, model) {
     return reject(err);
   });
 }
-
-module.exports = tryHandlingCrudError;

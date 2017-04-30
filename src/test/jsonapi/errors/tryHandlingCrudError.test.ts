@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const tryHandlingCrudError = require('./../../../jsonapi/errors/tryHandlingCrudError');
+import tryHandlingCrudError from './../../../jsonapi/errors/tryHandlingCrudError';
 const Sequelize = require('sequelize');
 
 chai.should();
@@ -42,7 +42,7 @@ describe('jsonapi/errors/tryHandlingCrudError', () => {
       }
     ]);
 
-    tryHandlingCrudError(originalErr, { name: 'fakeModel' }).then(errorData => {
+    tryHandlingCrudError(originalErr, { name: 'fakeModel' }).then((errorData: any) => {
       errorData.status.should.be.eql(422);
 
       JSON.stringify(errorData.json).should.be.eql(JSON.stringify({
@@ -68,7 +68,7 @@ describe('jsonapi/errors/tryHandlingCrudError', () => {
       }
     ]);
 
-    tryHandlingCrudError(originalErr, { name: 'anotherFakeModel' }).then(errorData => {
+    tryHandlingCrudError(originalErr, { name: 'anotherFakeModel' }).then((errorData: any) => {
       errorData.status.should.be.eql(422);
 
       JSON.stringify(errorData.json).should.be.eql(JSON.stringify({
@@ -95,7 +95,7 @@ describe('jsonapi/errors/tryHandlingCrudError', () => {
       }
     ]);
 
-    tryHandlingCrudError(originalErr, { name: 'coolModel' }).then(errorData => {
+    tryHandlingCrudError(originalErr, { name: 'coolModel' }).then((errorData: any) => {
       errorData.status.should.be.eql(422);
 
       JSON.stringify(errorData.json).should.be.eql(JSON.stringify({
