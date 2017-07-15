@@ -1,9 +1,15 @@
 {
     "compilerOptions": {
+        "baseUrl": "./",
+        "rootDir": "./src",
         "module": "commonjs",
         "target": "es5",
         "noImplicitAny": false,
         "sourceMap": true,
         "lib": ["es6"]
-    }
+    },
+    "include": [
+        "typings/index.d.ts",
+        "src/**/*"
+    ]
 }
