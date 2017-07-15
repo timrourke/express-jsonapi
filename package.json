@@ -37,7 +37,8 @@
       "json",
       "html"
     ],
-    "all": true
+    "all": true,
+    "sourceMap": true
   },
   "dependencies": {
     "bcrypt": "^1.0.2",
