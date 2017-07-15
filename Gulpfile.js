@@ -15,9 +15,10 @@ const tsOptions = {
 function compileTypescript() {
   console.log('Compiling typescript');
 
-  const tsResult = gulp.src(['src/**/*.ts', '!src/.baseDir.ts'])
+  const tsProject = ts.createProject('tsconfig.json');
+  const tsResult = gulp.src(['typings/index.d.ts', 'src/**/*.ts', '!src/.baseDir.ts'])
     .pipe(sourcemaps.init())
-    .pipe(ts(tsOptions))
+	.pipe(tsProject())
     .on('error', notify.onError({
       title: "Typescript compilation failed.",
       message: "<%= error.message %>",
