@@ -1,0 +1,82 @@
+{
+  "name": "jsonapi",
+  "version": "1.0.0",
+  "description": "An ExpressJS API implementing the JSON API specification",
+  "main": "server.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timrourke/jsonapi.git"
+  },
+  "author": {
+    "name": "Tim Rourke",
+    "email": "tim@timrourke.com",
+    "url": "https://timrourke.com"
+  },
+  "scripts": {
+    "start": "NODE_ENV=production node_modules/.bin/sequelize db:migrate --config ./dist/config/database.json --migrations-path ./dist/db/migrations && NODE_ENV=production node ./dist/server.js",
+    "startdev": "NODE_ENV=development node_modules/.bin/sequelize db:migrate --config ./dist/config/database.json --migrations-path ./dist/db/migrations && NODE_ENV=development node ./dist/server.js",
+    "test": "NODE_ENV=test mocha $(find src/test -name '*.test.ts') --require source-map-support/register src/**/*.js --reporter mocha-junit-reporter --reporter spec --compilers ts:ts-node/register --bail",
+    "testnonyc": "NODE_ENV=test node_modules/.bin/mocha ./dist"
+  },
+  "nyc": {
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "typings"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "json",
+      "html"
+    ],
+    "all": true
+  },
+  "dependencies": {
+    "bcrypt": "^1.0.2",
+    "body-parser": "^1.17.1",
+    "compression": "^1.6.2",
+    "express": "^4.15.2",
+    "helmet": "^3.5.0",
+    "inflection": "^1.12.0",
+    "method-override": "^2.3.8",
+    "mysql": "^2.13.0",
+    "parseurl": "^1.3.1",
+    "sequelize": "^3.30.4",
+    "sequelize-cli": "^2.7.0",
+    "sinon": "^2.1.0",
+    "source-map-support": "^0.4.15"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.16.3",
+    "@types/chai": "^3.5.1",
+    "@types/chai-http": "^0.0.30",
+    "@types/method-override": "^0.0.29",
+    "@types/mocha": "^2.2.41",
+    "@types/mysql": "^0.0.32",
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
+    "coveralls": "^2.13.0",
+    "faker": "^4.1.0",
+    "gulp": "^3.9.1",
+    "gulp-notify": "^3.0.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-typescript": "^3.1.6",
+    "mocha": "^3.2.0",
+    "mocha-junit-reporter": "^1.13.0",
+    "mocha-lcov-reporter": "^1.3.0",
+    "nyc": "^10.2.0",
+    "rosie": "^1.6.0",
+    "ts-node": "^3.0.4",
+    "tslint": "^5.1.0",
+    "typemoq": "^1.5.0",
+    "typescript": "^2.3.2"
+  }
+}
