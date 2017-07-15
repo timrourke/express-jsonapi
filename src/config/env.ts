@@ -1,11 +1,11 @@
 'use strict';
 
-interface EnvConfig {
+export interface EnvConfig {
   host: string;
   apiBase: string;
 }
 
-module.exports = {
+export default {
   "development": {
     "host": "http://localhost:3000",
     "apiBase": "/api"
@@ -18,4 +18,4 @@ module.exports = {
     "host": "http://localhost:3000",
     "apiBase": "/api"
   }
-}
+};

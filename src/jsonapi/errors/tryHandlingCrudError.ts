@@ -54,7 +54,8 @@ export default function tryHandlingCrudError(err: any, model: Model<any, any>) {
     }
 
     if (err instanceof ValidationError) {
-      let errors = err.errors.map(sequelizeErrorItem => {
+      let validationError = <ValidationError> err;
+      let errors = validationError.errors.map(sequelizeErrorItem => {
         return buildValidationError(sequelizeErrorItem, model.name);
       });
 

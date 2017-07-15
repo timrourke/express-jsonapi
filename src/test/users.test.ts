@@ -2,7 +2,7 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
+import * as chai from 'chai';
 const chaiHttp = require('chai-http');
 const server = require('../server');
 chai.should();
@@ -274,7 +274,7 @@ describe('users', () => {
   describe('DELETE /api/users/:id', () => {
     it('should throw 404 when user does not exist', (done) => {
       chai.request(server.app)
-        .delete('/api/users/1')
+        .del('/api/users/1')
         .set('Content-Type', 'application/vnd.api+json')
         .end((err, res) => {
           res.should.have.status(404);
@@ -301,7 +301,7 @@ describe('users', () => {
       });
 
       chai.request(server.app)
-        .delete('/api/users/1')
+        .del('/api/users/1')
         .set('Content-Type', 'application/vnd.api+json')
         .end((err, res) => {
           res.should.have.status(204);

@@ -1,6 +1,6 @@
 'use strict';
 
-import { Model } from 'sequelize';
+import { Instance, Model } from 'sequelize';
 import { Request, Response, NextFunction } from 'express';
 import BadRequest from './errors/BadRequest';
 const StringUtils = require('./../utils/String');
@@ -182,47 +182,53 @@ function buildPaginationErrOffsetLessThanMin(pageParam: string, invalidValue: an
   return error;
 }
 
+/**
+ * GetListRequest describes a get list request that can be validated to ensure
+ * compliance with JSON API
+ * 
+ * @class GetListRequest
+ */
 class GetListRequest {
 
   /**
    * Array of errors, if any.
    * 
-   * @var {Mixed[]}
+   * @property {Mixed[]}
    */
   errors: Array<any>;
 
   /**
    * Include tree
    * 
-   * @var {Object}
+   * @property {Object}
    */
   include: any;
 
   /**
    * Sequelize Model for this request
    * 
-   * @var {Sequelize.Model}
+   * @property {Sequelize.Model}
    */
   model: Model<any, any>;
 
   /**
    * Array of orders, where each element is a tuple containing the attr name and the sort direction
    * 
-   * @var {Array[]}
+   * @property {Array[]}
    */
   orders: Array<Array<string>>;
 
   /**
    * Pagination constraints for query
    * 
-   * @var {Object}
+   * @property {Object}
    */
   pagination: any;
 
   /**
    * Sequelize query params to set query constraints
    * 
-   * @var {Object}
+   * @property {Object}
    */
   sequelizeQueryParams: any;
 
@@ -254,9 +260,10 @@ class GetListRequest {
   /**
    * Validate the request
    *
+   * @method validate
    * @return {Promise} Promise that rejects with an array of errors, if any
    */
-  validate() {
+  public validate() {
     return new Promise((resolve, reject) => {
       this.errors = this.errors.concat(this.validateIncludes());
 
@@ -275,9 +282,10 @@ class GetListRequest {
   /**
    * Validate includes
    *
-   * @return {Array} Array of errors, if any
+   * @method validateIncludes
+   * @return {BadRequest[]} Array of errors, if any
    */
-  validateIncludes() {
+  private validateIncludes(): Array<BadRequest> {
     let errors = [];
 
     Object.assign(this.sequelizeQueryParams, { include: [] });
@@ -295,9 +303,10 @@ class GetListRequest {
   /**
    * Validate pagination
    *
-   * @return {Array} Array of errors, if any
+   * @method validatePagination
+   * @return {BadRequest[]} Array of errors, if any
    */
-  validatePagination() {
+  private validatePagination(): Array<BadRequest> {
     let hasOffset = this.pagination.hasOwnProperty('offset') && this.pagination.offset;
     let hasLimit  = this.pagination.hasOwnProperty('limit') && this.pagination.limit;
     let hasNumber = this.pagination.hasOwnProperty('number') && this.pagination.number;
@@ -397,9 +406,10 @@ class GetListRequest {
   /**
    * Validate sorts
    *
-   * @return {Array} Array of errors, if any
+   * @method validateSorts
+   * @return {BadRequest[]} Array of errors, if any
    */
-  validateSorts() {
+  private validateSorts(): Array<BadRequest> {
     let errors = [];
     let sorts = this.orders.map(sort => {
       let [attrName, direction] = sort;
@@ -429,7 +439,7 @@ class GetListRequest {
  * @param {Object} includeStatement The Sequelize query object to pass to the query builder
  * @param {Array} errors An array of BadRequest errors
  */
-function validateSingleInclude(parent, currentModel, includeStatement, errors) {
+function validateSingleInclude(parent, currentModel: Model<any, any>, includeStatement, errors: Array<BadRequest>) {
   // Iterate over each child of the parent branch of the include branch and try
   // to validate and build a query object for it
   Object.keys(parent).forEach(child => {

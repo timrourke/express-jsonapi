@@ -1,6 +1,6 @@
 'use strict';
 
-const env = require('./env.js');
+import env, { EnvConfig } from './env';
 
 class Config {
   apiBaseUrl: string;

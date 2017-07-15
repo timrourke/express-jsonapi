@@ -2,8 +2,8 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
-const ResourceIdentifierObject = require('./../../jsonapi/ResourceIdentifierObject');
+import * as chai from 'chai';
+import ResourceIdentifierObject from './../../jsonapi/ResourceIdentifierObject';
 
 chai.should();
 
@@ -14,6 +14,10 @@ chai.should();
  */
 function ModelInstanceStub() {
   this.id = 784;
+
+  this.get = function(key) {
+    return this[key];
+  }
 
   this.Model = {
     getType: function() {

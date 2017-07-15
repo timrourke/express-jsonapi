@@ -1,5 +1,7 @@
 'use strict';
 
+import { Instance } from 'sequelize';
+
 /**
  * Extract included models as a flat array from a Sequelize model array.
  *
@@ -10,7 +12,7 @@
  * @param {Sequelize.Instance|Sequelize.Instance[]} models Sequelize.Instance (or array of them)
  * @param {Array} included Array of included models to serialize
  */
-function extractIncludedModelsAsFlatArray(models, included) {
+export default function extractIncludedModelsAsFlatArray(models: any, included: Array<Instance<any, any>>) {
   if (!Array.isArray(models)) {
     models = [models];
   }
@@ -31,6 +33,3 @@ function extractIncludedModelsAsFlatArray(models, included) {
     });
   });
 }
-
-module.exports = extractIncludedModelsAsFlatArray;
-

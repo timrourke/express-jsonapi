@@ -69,7 +69,7 @@ class ResourceObject {
    */
   serializeRelationships(json) {
     let relationships = Object.keys(this.modelInstance.Model.associations);
-    let id = String(this.modelInstance.id);
+    let id = String(this.modelInstance.get('id'));
     let originalAttrs = this.modelInstance.attributes;
     let foreignKeys = originalAttrs
       .map(attr => StringUtils.convertCamelToDasherized(attr))
@@ -104,7 +104,7 @@ class ResourceObject {
   toJSON() {
     let model = this.modelInstance.Model;
 
-    let id = String(this.modelInstance.id);
+    let id = String(this.modelInstance.get('id'));
 
     let json = {
       type: model.getType(),

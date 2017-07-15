@@ -1,13 +1,39 @@
-'use strict';
+import BaseError from './BaseError';
 
-export default class NotFoundError extends Error {
+/**
+ * NotFoundError is useful for handling common 404 scenarios. Serializes into a
+ * JSON API error object.
+ * 
+ * @class NotFoundError
+ * @extends BaseError
+ */
+export default class NotFoundError extends BaseError {
 
   /**
-   * toJSON
+   * The error message
+   * 
+   * @property {String}
+   */
+  public message: string = "Nothing found.";
+  
+  /**
+   * Constructor
+   * 
+   * @param {String} message The message to use for the error's detail
+   * @constructor
+   */
+  constructor (message: string = "Nothing found.") {
+    super();    
+    this.message = message;
+  }
+
+  /**
+   * Serializes error to a JSON API error object
    *
+   * @method toJSON
    * @return {Object}
    */
-  toJSON(): any {
+  public toJSON(): any {
     return {
       status: 404,
       title: 'Not Found',

@@ -6,6 +6,9 @@ const chai = require('chai');
 import tryHandlingCrudError from './../../../jsonapi/errors/tryHandlingCrudError';
 const Sequelize = require('sequelize');
 
+import { It, Mock } from 'typemoq';
+import { Model } from 'sequelize';
+
 chai.should();
 
 describe('jsonapi/errors/tryHandlingCrudError', () => {
@@ -42,7 +45,11 @@ describe('jsonapi/errors/tryHandlingCrudError', () => {
       }
     ]);
 
-    tryHandlingCrudError(originalErr, { name: 'fakeModel' }).then((errorData: any) => {
+    // Create mock of Sequelize Model
+    let mock = Mock.ofType<Model<any, any>>();
+    mock.setup(x => x.name).returns(() => 'fakeModel');
+
+    tryHandlingCrudError(originalErr, mock.object).then((errorData: any) => {
       errorData.status.should.be.eql(422);
 
       JSON.stringify(errorData.json).should.be.eql(JSON.stringify({
@@ -68,7 +75,11 @@ describe('jsonapi/errors/tryHandlingCrudError', () => {
       }
     ]);
 
-    tryHandlingCrudError(originalErr, { name: 'anotherFakeModel' }).then((errorData: any) => {
+    // Create mock of Sequelize Model
+    let mock = Mock.ofType<Model<any, any>>();
+    mock.setup(x => x.name).returns(() => 'anotherFakeModel');
+
+    tryHandlingCrudError(originalErr, mock.object).then((errorData: any) => {
       errorData.status.should.be.eql(422);
 
       JSON.stringify(errorData.json).should.be.eql(JSON.stringify({
@@ -95,7 +106,11 @@ describe('jsonapi/errors/tryHandlingCrudError', () => {
       }
     ]);
 
-    tryHandlingCrudError(originalErr, { name: 'coolModel' }).then((errorData: any) => {
+    // Create mock of Sequelize Model
+    let mock = Mock.ofType<Model<any, any>>();
+    mock.setup(x => x.name).returns(() => 'coolModel');
+
+    tryHandlingCrudError(originalErr, mock.object).then((errorData: any) => {
       errorData.status.should.be.eql(422);
 
       JSON.stringify(errorData.json).should.be.eql(JSON.stringify({

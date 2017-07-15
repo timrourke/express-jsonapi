@@ -2,8 +2,8 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
-const extractIncludedModelsAsFlatArray = require('./../../jsonapi/extract-included-models-as-flat-array');
+import * as chai from 'chai';
+import extractIncludedModelsAsFlatArray from './../../jsonapi/extract-included-models-as-flat-array';
 
 chai.should();
 

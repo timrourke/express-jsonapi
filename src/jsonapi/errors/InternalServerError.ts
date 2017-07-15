@@ -1,13 +1,20 @@
-'use strict';
+import BaseError from './BaseError';
 
-export default class InternalServerError extends Error {
+/**
+ * InternalServerError useful for handling unrecoverable errors.
+ * 
+ * @class InternalServerError
+ * @extends BaseError
+ */
+export default class InternalServerError extends BaseError {
 
   /**
-   * toJSON
+   * Serializes error to a JSON API error object
    *
+   * @method toJSON
    * @return {Object}
    */
-  toJSON() {
+  public toJSON(): any {
     return {
       status: 500,
       title: 'Internal Server Error',

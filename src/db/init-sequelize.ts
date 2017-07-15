@@ -8,7 +8,7 @@ import * as Sequelize from 'sequelize';
  *
  * @return {String}
  */
-function buildConnectionString(env: string = 'development') {
+function buildConnectionString(env: string = 'development'): string {
   const connectionData = dbConfig[env];
   const user = connectionData.username;
   const pass = connectionData.password ?
@@ -25,7 +25,7 @@ function buildConnectionString(env: string = 'development') {
  *
  * @return {Sequelize}
  */
-export default function initSequelize(): Sequelize.Sequelize {
+export default function initSequelize(): Sequelize.Connection {
   const shouldLogQueries = dbConfig[process.env.NODE_ENV].logging;
 
   return new Sequelize(buildConnectionString(process.env.NODE_ENV), {

@@ -1,6 +1,12 @@
-'use strict';
+import BaseError from './BaseError';
 
-export default class BadRequest extends Error {
+/**
+ * BadRequest is useful for handling requests that should throw a 400.
+ * 
+ * @class BadRequest
+ * @extends BaseError
+ */
+export default class BadRequest extends BaseError {
 
   /**
    * JSON API links property containing an `about` member that leads to further
@@ -8,9 +14,16 @@ export default class BadRequest extends Error {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @var {mixed}
+   * @property {mixed}
    */
   public links: any;
+
+  /**
+   * The error message
+   * 
+   * @property {String}
+   */
+  public message: string = 'Bad request.';
 
   /**
    * JSON API source property referring to the query parameter that caused the
@@ -18,15 +31,27 @@ export default class BadRequest extends Error {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @var {mixed}
+   * @property {mixed}
    */
   public source: any;
+
+  /**
+   * Constructor
+   * 
+   * @param {String} message The message to use for the error's detail
+   * @constructor
+   */
+  constructor (message: string = 'Bad request.') {
+    super();    
+    this.message = message;
+  }
 
   /**
    * Set the source property on the request object
    *
    * @see http://jsonapi.org/format/#errors
    *
+   * @method setSource
    * @param {String} param The invalid query parameter
    */
   public setSource(param: string): void {
@@ -40,9 +65,10 @@ export default class BadRequest extends Error {
    *
    * @see http://jsonapi.org/format/#errors
    *
+   * @method toJSON
    * @return {Object}
    */
-  toJSON() {
+  public toJSON() {
     let ret: any = {
       status: 400,
       title: 'Bad Request',

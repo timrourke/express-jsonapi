@@ -3,15 +3,18 @@
 const inflection = require('inflection');
 const StringUtils = require('../utils/String');
 const JsonApiResourceObject = require('./../jsonapi/ResourceObject');
-const JsonApiResourceIdentifierObject = require('./../jsonapi/ResourceIdentifierObject');
+import ResourceIdentifierObject from './../jsonapi/ResourceIdentifierObject';
 import JsonApiResourceObjectLinks from './../jsonapi/ResourceObjectLinks';
 import NotFoundError from './../jsonapi/errors/NotFoundError';
 import NotFoundHandler from './../jsonapi/middleware/not-found-handler';
 const GetListRequest = require('./../jsonapi/GetListRequest');
-const JsonApiExtractIncludedModelsAsFlatArray = require('./../jsonapi/extract-included-models-as-flat-array');
+import extractIncludedModelsAsFlatArray from './../jsonapi/extract-included-models-as-flat-array';
 const parseurl = require('parseurl');
 import config from './../config/config';
-import { Model } from 'sequelize';
+import { 
+  Instance, 
+  Model
+} from 'sequelize';
 import { 
   Application,
   NextFunction,
@@ -28,7 +31,7 @@ class Route {
   /** 
    * Express application instance
    * 
-   * @var {Express.Application}
+   * @property {Express.Application}
    */
   app: Application;
 
@@ -37,14 +40,14 @@ class Route {
   /**
    * Sequelize model class to build routes for
    * 
-   * @var {Sequelize.Model}
+   * @property {Sequelize.Model}
    */
   model: Model<any, any>;
 
   /**
    * JSON API model type name
    * 
-   * @var {String}
+   * @property {String}
    */
   modelType: string;
 
@@ -56,7 +59,7 @@ class Route {
    * @param {Sequelize.Model} model The Sequelize model class to build routes for
    * @param {Controller} controllerClass The controller class to map requests to
    */
-  constructor(app, model, controllerClass) {
+  constructor(app, model: Model<any, any>, controllerClass) {
     this.app = app;
     this.model = model;
     this.controllerClass = controllerClass;
@@ -67,26 +70,26 @@ class Route {
    * Initilize the routes on the app
    */
   initialize() {
-    let _this = this;
+    let self = this;
 
     this.app.get(`/api/${this.modelType}`, function(req: Request, res: Response, next: NextFunction) {
-      _this.handleGetListRequest(req, res, next);
+      self.handleGetListRequest(req, res, next);
     });
 
     this.app.get(`/api/${this.modelType}/:id`, function(req: Request, res: Response, next: NextFunction) {
-      _this.handleGetRequest(req, res, next);
+      self.handleGetRequest(req, res, next);
     });
 
     this.app.post(`/api/${this.modelType}`, function(req: Request, res: Response, next: NextFunction) {
-      _this.handlePostRequest(req, res, next);
+      self.handlePostRequest(req, res, next);
     });
 
     this.app.patch(`/api/${this.modelType}/:id`, function(req: Request, res: Response, next: NextFunction) {
-      _this.handlePatchRequest(req, res, next);
+      self.handlePatchRequest(req, res, next);
     });
 
     this.app.delete(`/api/${this.modelType}/:id`, function(req: Request, res: Response, next: NextFunction) {
-      _this.handleDeleteRequest(req, res, next);
+      self.handleDeleteRequest(req, res, next);
     });
 
     this.app.all(`/api/${this.modelType}/:id/relationships`, function(req: Request, res: Response, next: NextFunction) {
@@ -105,21 +108,21 @@ class Route {
    * @param {Express.Response} res The Express response
    * @param {Function} next The next Express handler/middleware
    */
-  handleGetListRequest(req, res, next) {
+  handleGetListRequest(req: Request, res: Response, next: NextFunction) {
     let controller = new this.controllerClass(this.model);
     let request    = new GetListRequest(req, this.model);
 
     request.validate().then(sequelizeQueryParams => {
-      controller.getList(sequelizeQueryParams).then((result: any) => {
-        let parsedUrl      = parseurl(req);
-        let queryParams    = parsedUrl.search || '';
-        let count          = result.count;
-        let foundModels    = result.rows;
+      controller.getList(sequelizeQueryParams).then((result: { rows: Array<Instance<any, any>>, count: number }) => {
+        let parsedUrl: any      = parseurl(req);
+        let queryParams: string = parsedUrl.search || '';
+        let count: number       = result.count;
+        let foundModels: Array<Instance<any, any>> = result.rows;
         let json = {
           links: {
             self: `${config.getApiBaseUrl()}/${this.modelType}${queryParams}`
           },
-          data: foundModels.map(model => new JsonApiResourceObject(model)),
+          data: foundModels.map((model: Instance<any, any>) => new JsonApiResourceObject(model)),
           meta: {
             total: count
           }
@@ -134,7 +137,7 @@ class Route {
 
         res.json(json);
       }).catch(err => {
-        next(err, req, res, next);
+        next(err);
       });
     }).catch(errors => {
       res.status(400).json({
@@ -152,14 +155,14 @@ class Route {
    * @param {Express.Response} res The Express response
    * @param {Function} next The next Express handler/middleware
    */
-  handleRelatedRequest(relationship, relatedPathSegment, req, res, next) {
+  handleRelatedRequest(relationship: string, relatedPathSegment: string, req: Request, res: Response, next: NextFunction) {
     let association = this.model.associations[relationship];
     let relatedModel = association.target;
     let controller = new this.controllerClass(this.model);
     let request = new GetListRequest(req, relatedModel);
     let accessorMethodName = association.accessors.get;
 
-    controller.getOne(req.params.id).then(foundModel => {
+    controller.getOne(req.params.id).then((foundModel: Instance<any, any>) => {
       if (!foundModel) {
         return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
@@ -168,7 +171,7 @@ class Route {
         foundModel[accessorMethodName](sequelizeQueryParams).then(foundModels => {
           let json = {
             links: {
-              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/${relatedPathSegment}`,
+              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.get('id')}/${relatedPathSegment}`,
             },
             data: (association.isMultiAssociation) ?
               foundModels.map(model => new JsonApiResourceObject(model)) :
@@ -179,7 +182,7 @@ class Route {
 
           res.json(json);
         }).catch(err => {
-          next(err, req, res, next);
+          next(err);
         });
       }).catch(errors => {
         res.status(400).json({
@@ -205,7 +208,7 @@ class Route {
     let request = new GetListRequest(req, relatedModel);
     let accessorMethodName = association.accessors.get;
 
-    controller.getOne(req.params.id).then(foundModel => {
+    controller.getOne(req.params.id).then((foundModel: Instance<any, any>) => {
       if (!foundModel) {
         return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
@@ -218,12 +221,12 @@ class Route {
         foundModel[accessorMethodName](sequelizeQueryParams).then(foundModels => {
           let json = {
             links: {
-              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/relationships/${relatedPathSegment}`,
-              related: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.id}/${relatedPathSegment}`,
+              self: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.get('id')}/relationships/${relatedPathSegment}`,
+              related: `${config.getApiBaseUrl()}/${this.modelType}/${foundModel.get('id')}/${relatedPathSegment}`,
             },
             data: (association.isMultiAssociation) ?
-              foundModels.map(model => new JsonApiResourceIdentifierObject(model)) :
-              new JsonApiResourceIdentifierObject(foundModels)
+              foundModels.map(model => new ResourceIdentifierObject(model)) :
+              new ResourceIdentifierObject(foundModels)
           };
 
           res.json(json);
@@ -245,7 +248,7 @@ class Route {
    * @param {Express.Response} res The Express response
    * @param {Function} next The next Express handler/middleware
    */
-  handleGetRequest(req, res, next) {
+  handleGetRequest(req: Request, res: Response, next: NextFunction) {
     let controller = new this.controllerClass(this.model);
 
     controller.getOne(req.params.id).then(foundModel => {
@@ -258,7 +261,7 @@ class Route {
         data: new JsonApiResourceObject(foundModel)
       });
     }).catch(err => {
-      next(err, req, res, next);
+      next(err);
     });
   }
 
@@ -332,7 +335,7 @@ class Route {
    * @param {Express.Response} res The Express response
    * @param {Function} next The next Express handler/middleware
    */
-  handleDeleteRequest(req, res, next) {
+  handleDeleteRequest(req: Request, res: Response, next: NextFunction) {
     let controller = new this.controllerClass(this.model);
 
     controller.deleteOne(req.params.id).then(deletedModel => {
@@ -341,8 +344,8 @@ class Route {
       }
 
       res.status(204).end();
-    }).catch(err => {
-      next(err, req, res, next);
+    }).catch((err: any) => {
+      next(err);
     });
   }
 }
@@ -353,7 +356,7 @@ class Route {
  * @param {Route} route Route instance to define the route handlers for
  * @param {String} relationship Name of the relationship to define route handlers for
  */
-function buildRelatedGetListRoutesForRelationship(route, relationship) {
+function buildRelatedGetListRoutesForRelationship(route, relationship: string) {
   let association = route.model.associations[relationship];
   let relatedModel = association.target;
   let relatedModelType = StringUtils.convertCamelToDasherized(relatedModel.name);
@@ -362,16 +365,19 @@ function buildRelatedGetListRoutesForRelationship(route, relationship) {
     relatedModelType;
 
   // Define a handler for getting relationship objects for the relationship
-  route.app.get(`/api/${route.modelType}/:id/relationships/${relatedPathSegment}`, function() {
+  route.app.get(`/api/${route.modelType}/:id/relationships/${relatedPathSegment}`,
+    function(req: Request, res: Response, next: NextFunction) {
     route.handleRelationshipObjectsRequest(
       relationship,
       relatedPathSegment,
-      ...arguments
+      req,
+      res,
+      next
     );
   });
 
   // Define a general 404 handler for non-existent relationships
-  route.app.all(`/api/${route.modelType}/:id/relationships/:relationship`, (req, res) => {
+  route.app.all(`/api/${route.modelType}/:id/relationships/:relationship`, (req: Request, res: Response) => {
     let msg = `The relationship "${req.params.relationship}" does not exist for ${route.modelType}`;
 
     res.status(404).json({
@@ -382,16 +388,19 @@ function buildRelatedGetListRoutesForRelationship(route, relationship) {
   });
 
   // Define a handler for getting the related objects themselves
-  route.app.get(`/api/${route.modelType}/:id/${relatedPathSegment}`, function() {
+  route.app.get(`/api/${route.modelType}/:id/${relatedPathSegment}`,
+    function(req: Request, res: Response, next: NextFunction) {
     route.handleRelatedRequest(
       relationship,
       relatedPathSegment,
-      ...arguments
+      req,
+      res,
+      next
     );
   });
 
   // Define a general 404 handler for non-existent relationships
-  route.app.all(`/api/${route.modelType}/:id/:relationship`, (req, res) => {
+  route.app.all(`/api/${route.modelType}/:id/:relationship`, (req: Request, res: Response) => {
     let msg = `The relationship "${req.params.relationship}" does not exist for ${route.modelType}`;
 
     res.status(404).json({
@@ -409,10 +418,10 @@ function buildRelatedGetListRoutesForRelationship(route, relationship) {
  * @param {Object} attrs Attributes object
  * @return {Object}
  */
-function convertAttrsToCamelCase(attrs) {
+function convertAttrsToCamelCase(attrs: any): any {
   let camelCaseAttrs = {};
 
-  Object.keys(attrs).forEach(keyName => {
+  Object.keys(attrs).forEach((keyName: string) => {
     let camelCaseKey = StringUtils.convertDasherizedToCamelCase(keyName);
 
     camelCaseAttrs[camelCaseKey] = attrs[keyName];
@@ -434,7 +443,7 @@ function convertAttrsToCamelCase(attrs) {
 function serializeIncludesForJson(modelArray, json) {
   let includedModels = [];
 
-  JsonApiExtractIncludedModelsAsFlatArray(modelArray, includedModels);
+  extractIncludedModelsAsFlatArray(modelArray, includedModels);
 
   if (includedModels.length) {
     json.included = getUniqueModelArray(includedModels)
@@ -493,6 +502,8 @@ function serializePaginationLinks(count, sequelizeQueryParams, parsedUrl) {
  * @param {String} modelType The model type that wasn't found
  */
 function throwNoModelTypeFoundWithId(req, res, modelType) {
+  let error = new NotFoundError(`No ${modelType} found with the id of ${req.params.id}`);
+
   res.status(404).json({
     data: null,
     errors: [

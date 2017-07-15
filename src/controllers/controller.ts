@@ -9,7 +9,7 @@ export interface ControllerConstructor {
 interface ControllerInterface {
   getOne(id): Promise<Instance<any, any>>;
 
-  getList(sequelizeQueryParams): Promise<Array<Instance<any, any>>>;
+  getList(sequelizeQueryParams): Promise<{ rows: Array<Instance<any, any>>, count: number }>;
 
   createOne(attrs: any): Promise<Instance<any, any>>;
 
@@ -53,7 +53,7 @@ export default class Controller implements ControllerInterface {
    * @param {Object} sequelizeQueryParams The query params to pass to the query builder
    * @return {Promise}
    */
-  getList(sequelizeQueryParams = {}): Promise<Array<Instance<any, any>>> {
+  getList(sequelizeQueryParams = {}): Promise<{ rows: any[], count: number }> {
     return new Promise((resolve: Function, reject: Function) => {
       this.model.findAndCountAll(sequelizeQueryParams).then(result => {
         resolve(result);

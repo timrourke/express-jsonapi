@@ -13,8 +13,8 @@ import JsonApiMiddlewareValidateRequestBody from './jsonapi/middleware/validate-
 import notFoundHandler from './jsonapi/middleware/not-found-handler';
 
 const db = initSequelize();
-const defineModels = require('./models/models');
-const Models = defineModels(db);
+import * as ModelDefinitions from './models/models';
+const Models = ModelDefinitions.defineModels(db);
 
 const Route = require('./route/route');
 

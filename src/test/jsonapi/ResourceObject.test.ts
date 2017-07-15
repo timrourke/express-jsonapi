@@ -2,8 +2,8 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
-const ResourceObject = require('./../../jsonapi/ResourceObject.js');
+import * as chai from 'chai';
+const ResourceObject = require('./../../jsonapi/ResourceObject');
 
 chai.should();
 
@@ -21,6 +21,10 @@ function ModelInstanceStub() {
   ];
 
   this.get = function(keyName) {
+    if (keyName === 'id') {
+      return this.id;
+    }
+
     return keyName + ' value';
   };
 

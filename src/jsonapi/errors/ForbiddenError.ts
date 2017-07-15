@@ -1,4 +1,4 @@
-'use strict';
+import BaseError from './BaseError';
 
 interface LinksAboutInterface {
   about: string;
@@ -16,51 +16,77 @@ interface ForbiddenErrorJsonInterface {
   source?: SourcePointerInterface;
 }
 
-export default class ForbiddenError extends Error {
+/**
+ * ForbiddenError is useful for handling requests that should throw a 403.
+ * 
+ * @class ForbiddenError
+ * @extends BaseError
+ */
+export default class ForbiddenError extends BaseError {
 
   /**
    * JSON API `links` member referencing additional information about this error
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @var {Object}
+   * @property {LinksAboutInterface}
    */
-  links: LinksAboutInterface;
+  public links: LinksAboutInterface;
+  
+  /**
+   * The error message
+   * 
+   * @property {String}
+   */
+  public message: string = 'This request is forbidden.';
 
   /**
    * JSON API `source` member identifying field that triggered this error
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @var {Object}
+   * @property {SourcePointerInterface}
    */
-  source: SourcePointerInterface;
+  public source: SourcePointerInterface;
+
+  /**
+   * Constructor
+   * 
+   * @param {String} message The message to use for the error's detail
+   * @constructor
+   */
+  constructor (message: string = '') {
+    super();    
+    this.message = message;
+  }
 
   /**
    * Set the source.pointer property on the request object
    *
    * @see http://jsonapi.org/format/#errors
    *
+   * @method setPointer
    * @param {String} pointer The path to the invalid attribute
    */
-  setPointer(pointer: string) {
+  public setPointer(pointer: string) {
     this.source = {
       pointer: pointer
     };
   }
 
   /**
-   * toJSON
+   * Serializes error to a JSON API error object
    *
+   * @method toJSON
    * @return {Object}
    */
-  toJSON(): ForbiddenErrorJsonInterface {
+  public toJSON(): ForbiddenErrorJsonInterface {
     let ret: ForbiddenErrorJsonInterface = {
       status: 403,
       title: 'Forbidden'
     };
 
-    if (this.hasOwnProperty('message')) {
+    if (this.hasOwnProperty('message') && this.message) {
       ret.detail = this.message;
     }
 
