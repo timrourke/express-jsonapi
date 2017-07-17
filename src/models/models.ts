@@ -37,7 +37,7 @@ Sequelize.Instance['prototype'].getType = function() {
 /**
  * Define the models and their relationships and return them as a hash
  *
- * @param {Sequelize.Sequelize} sequelize The Sequelize instance
+ * @param {Sequelize.Connection} sequelize The Sequelize instance
  * @return {Object}
  */
 export function defineModels(sequelize: Sequelize.Connection) {
