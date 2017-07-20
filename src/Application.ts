@@ -1,4 +1,10 @@
-import * as Express from 'express';
+import { 
+    Application as ExpressApp,
+    Request,
+    RequestHandler,
+    Response,
+    NextFunction
+} from 'express';
 import * as Sequelize from 'sequelize';
 const Route = require('./route/route');
 import Controller from './controllers/controller';
@@ -10,12 +16,13 @@ import InternalServerError from './jsonapi/errors/InternalServerError';
 /**
  * Log errors
  *
- * @param {mixed} err An error, if any
+ * @param {Error} err An error, if any
  * @param {Express.Request} req The Express request
  * @param {Express.Response} res The Express response
- * @param {Function} next The next Express handler/middleware
+ * @param {Express.NextFunction} next The next Express handler/middleware
+ * @return {void}
  */
-function logErrors(err, req, res, next) {
+function logErrors(err: Error, req: Request, res: Response, next: NextFunction): void {
   if (Array.isArray(err)) {
     err.forEach(error => {
       console.error(error.message);
@@ -25,18 +32,20 @@ function logErrors(err, req, res, next) {
     console.error(err.message);
     console.error(err.stack);
   }
-  next(err, req, res, next);
+
+  next(err);
 }
 
 /**
  * Render an internal server error to the client
  *
- * @param {mixed} err An error, if any
+ * @param {Error} err An error, if any
  * @param {Express.Request} req The Express request
  * @param {Express.Response} res The Express response
- * @param {Function} next The next Express handler/middleware
+ * @param {Express.NextFunction} next The next Express handler/middleware
+ * @return {void}
  */
-function clientErrorHandler(err, req, res, next) { //jshint ignore:line
+function clientErrorHandler(err: Error, req: Request, res: Response, next: NextFunction): void {
   res.status(500).json({
     errors: [
       new InternalServerError()
@@ -52,7 +61,7 @@ class Application {
      * @property expressApp
      * @type {Express.Application} expressApp
      */
-    private expressApp: Express.Application;
+    private expressApp: ExpressApp;
 
     /**
      * Sequelize DB connection
@@ -77,9 +86,10 @@ class Application {
      * @param {Express.Application} expressApp
      * @param {Sequelize.Connection} dbConnection
      * @param {Array<Sequelize.Model<any, any>>} models
+     * @return {void}
      */
     public constructor(
-        expressApp: Express.Application, 
+        expressApp: ExpressApp, 
         dbConnection: Sequelize.Connection,
         models: Array<Sequelize.Model<any, any>>
     ) {
@@ -91,15 +101,17 @@ class Application {
     /**
      * Get the Express application instance
      * 
+     * @method getExpressApp
      * @return {Express.Application}
      */
-    public getExpressApp(): Express.Application {
+    public getExpressApp(): ExpressApp {
         return this.expressApp;
     }
 
     /**
      * Get the Sequelize DB connection
      * 
+     * @method getDbConnection
      * @return {Sequelize.Connection}
      */
     public getDbConnection(): Sequelize.Connection {
@@ -109,10 +121,12 @@ class Application {
     /**
      * Configure the Express application's base middlewares
      * 
+     * @method configureMiddlewares
      * @param {Array<Express.RequestHandler>} middlewares An array of middlewares
      *  to apply to the Express application
+     * @return {void}
      */
-    public configureMiddlewares(middlewares: Array<Express.RequestHandler>) {
+    public configureMiddlewares(middlewares: Array<RequestHandler>) {
         middlewares.forEach(middleware => {
             this.expressApp.use(middleware);
         });
@@ -121,7 +135,9 @@ class Application {
     /**
      * Serve the application
      * 
+     * @method serve
      * @param {mixed} port 
+     * @return {void}
      */
     public serve(port) {
         this.bindHealthCheckRoute();
@@ -135,18 +151,24 @@ class Application {
 
     /**
      * Bind a simple health check route for inspecting server's responsiveness
+     * 
+     * @method bindHealthCheckRoute
+     * @return {void}
      */
-    private bindHealthCheckRoute() {
+    private bindHealthCheckRoute(): void {
         this.expressApp.get('/health',
-            function(req: Express.Request, res: Express.Response) {
+            function(req: Request, res: Response) {
                 res.send('Up.');
             });
     }
 
     /**
      * Configure middlewares for validating JSON API requests
+     * 
+     * @method configureJsonApiMiddlewares
+     * @return {void}
      */
-    private configureJsonApiMiddlewares() {
+    private configureJsonApiMiddlewares(): void {
         // Validate `Content-Type` request header
         this.expressApp.use(JsonApiMiddlewareValidateContentType);
 
@@ -154,7 +176,16 @@ class Application {
         this.expressApp.use(JsonApiMiddlewareValidateRequestBody);
     }
 
-    private buildResourcesForModels() {
+    /**
+     * Build JSON API resources for all models.
+     * 
+     * Attaches middlewares for validating JSON API request compliance.
+     * 
+     * @method buildResourcesForModels
+     * @return {void}
+     */
+    private buildResourcesForModels(): void {
+        // Attach middlewares for validating JSON API request compliance
         this.configureJsonApiMiddlewares();
 
         this.models.forEach((model: Sequelize.Model<any, any>) => {
@@ -164,7 +195,13 @@ class Application {
         });
     }
 
-    private configureClientErrorMiddlewares() {
+    /**
+     * Configures middleware stack for gracefully presenting the client with unhandled errors
+     * 
+     * @method configureClientErrorMiddlewares
+     * @return {void}
+     */
+    private configureClientErrorMiddlewares(): void {
         this.expressApp.use(notFoundHandler);
         this.expressApp.use(logErrors);
         this.expressApp.use(clientErrorHandler);
@@ -173,10 +210,11 @@ class Application {
     /**
      * Normalize a port into a number, string, or false.
      * 
-     * @param {mixed} val
+     * @method normalizePort
+     * @param {mixed} val Value to use for binding the server to a port
      * @return {Number|String|Boolean}
      */
-    private normalizePort(val: any) {
+    private normalizePort(val: any): number|string|boolean {
         const PORT = parseInt(val, 10);
 
         if (isNaN(PORT)) {
