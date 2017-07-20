@@ -57,9 +57,10 @@ class Route {
    * @constructor
    * @param {Express.Application} app The Express application instance
    * @param {Sequelize.Model} model The Sequelize model class to build routes for
-   * @param {Controller} controllerClass The controller class to map requests to
+   * @param {ControllerConstructor} controllerClass The controller class to map requests to
+   * @return {void}
    */
-  constructor(app, model: Model<any, any>, controllerClass) {
+  constructor(app: Application, model: Model<any, any>, controllerClass: ControllerConstructor) {
     this.app = app;
     this.model = model;
     this.controllerClass = controllerClass;
@@ -68,8 +69,10 @@ class Route {
 
   /**
    * Initilize the routes on the app
+   * 
+   * @return {void}
    */
-  initialize() {
+  initialize(): void {
     let self = this;
 
     this.app.get(`/api/${this.modelType}`, function(req: Request, res: Response, next: NextFunction) {
@@ -106,9 +109,10 @@ class Route {
    *
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handleGetListRequest(req: Request, res: Response, next: NextFunction) {
+  handleGetListRequest(req: Request, res: Response, next: NextFunction): void {
     let controller = new this.controllerClass(this.model);
     let request    = new GetListRequest(req, this.model);
 
@@ -128,11 +132,13 @@ class Route {
           }
         };
 
+        // Include pagination links in the response payload
         Object.assign(
           json.links,
           serializePaginationLinks(count, sequelizeQueryParams, parsedUrl)
         );
 
+        // Serialize any sideloaded models in the included kay
         serializeIncludesForJson(foundModels, json);
 
         res.json(json);
@@ -153,9 +159,10 @@ class Route {
    * @param {String} relatedPathSegment The URL path segment for the relationship
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handleRelatedRequest(relationship: string, relatedPathSegment: string, req: Request, res: Response, next: NextFunction) {
+  handleRelatedRequest(relationship: string, relatedPathSegment: string, req: Request, res: Response, next: NextFunction): void {
     let association = this.model.associations[relationship];
     let relatedModel = association.target;
     let controller = new this.controllerClass(this.model);
@@ -199,9 +206,10 @@ class Route {
    * @param {String} relatedPathSegment The URL path segment for the relationship
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handleRelationshipObjectsRequest(relationship, relatedPathSegment, req, res, next) {
+  handleRelationshipObjectsRequest(relationship: string, relatedPathSegment: string, req: Request, res: Response, next: NextFunction): void {
     let association = this.model.associations[relationship];
     let relatedModel = association.target;
     let controller = new this.controllerClass(this.model);
@@ -231,7 +239,7 @@ class Route {
 
           res.json(json);
         }).catch(err => {
-          next(err, req, res, next);
+          next(err);
         });
       }).catch(errors => {
         res.status(400).json({
@@ -246,9 +254,10 @@ class Route {
    *
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handleGetRequest(req: Request, res: Response, next: NextFunction) {
+  handleGetRequest(req: Request, res: Response, next: NextFunction): void {
     let controller = new this.controllerClass(this.model);
 
     controller.getOne(req.params.id).then(foundModel => {
@@ -270,9 +279,10 @@ class Route {
    *
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handlePostRequest(req, res, next) {
+  handlePostRequest(req: Request, res: Response, next: NextFunction) {
     let controller = new this.controllerClass(this.model);
     const attrs = convertAttrsToCamelCase(req.body.data.attributes);
 
@@ -292,7 +302,7 @@ class Route {
           .status(errorResponseData.status)
           .json(errorResponseData.json);
       }).catch(err => {
-        next(err, req, res, next);
+        next(err);
       });
     });
   }
@@ -302,9 +312,10 @@ class Route {
    *
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handlePatchRequest(req, res, next) {
+  handlePatchRequest(req: Request, res: Response, next: NextFunction): void {
     let controller = new this.controllerClass(this.model);
     const attrs = convertAttrsToCamelCase(req.body.data.attributes);
 
@@ -323,7 +334,7 @@ class Route {
           .status(errorResponseData.status)
           .json(errorResponseData.json);
       }).catch(err => {
-        next(err, req, res, next);
+        next(err);
       });
     });
   }
@@ -333,9 +344,10 @@ class Route {
    *
    * @param {Express.Request} req The Express request
    * @param {Express.Response} res The Express response
-   * @param {Function} next The next Express handler/middleware
+   * @param {Express.NextFunction} next The next Express handler/middleware
+   * @return {void}
    */
-  handleDeleteRequest(req: Request, res: Response, next: NextFunction) {
+  handleDeleteRequest(req: Request, res: Response, next: NextFunction): void {
     let controller = new this.controllerClass(this.model);
 
     controller.deleteOne(req.params.id).then(deletedModel => {
@@ -355,8 +367,9 @@ class Route {
  *
  * @param {Route} route Route instance to define the route handlers for
  * @param {String} relationship Name of the relationship to define route handlers for
+ * @return {void}
  */
-function buildRelatedGetListRoutesForRelationship(route, relationship: string) {
+function buildRelatedGetListRoutesForRelationship(route: Route, relationship: string): void {
   let association = route.model.associations[relationship];
   let relatedModel = association.target;
   let relatedModelType = StringUtils.convertCamelToDasherized(relatedModel.name);
@@ -366,7 +379,7 @@ function buildRelatedGetListRoutesForRelationship(route, relationship: string) {
 
   // Define a handler for getting relationship objects for the relationship
   route.app.get(`/api/${route.modelType}/:id/relationships/${relatedPathSegment}`,
-    function(req: Request, res: Response, next: NextFunction) {
+    function(req: Request, res: Response, next: NextFunction): void {
     route.handleRelationshipObjectsRequest(
       relationship,
       relatedPathSegment,
