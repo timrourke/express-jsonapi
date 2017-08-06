@@ -10,9 +10,10 @@ import { Instance } from 'sequelize';
  * will be pushed into the `included` array.
  *
  * @param {Sequelize.Instance|Sequelize.Instance[]} models Sequelize.Instance (or array of them)
- * @param {Array} included Array of included models to serialize
+ * @param {Array<Instance<any, any>>} included Array of included models to serialize
+ * @return {void}
  */
-export default function extractIncludedModelsAsFlatArray(models: any, included: Array<Instance<any, any>>) {
+export default function extractIncludedModelsAsFlatArray(models: any, included: Array<Instance<any, any>>): void {
   if (!Array.isArray(models)) {
     models = [models];
   }
