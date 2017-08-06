@@ -2,6 +2,7 @@
 
 import UnprocessableEntity from './../errors/UnprocessableEntity';
 import ForbiddenError from './../errors/ForbiddenError';
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * Whether the request body should be validated. GET and DELETE requests do not
@@ -10,9 +11,10 @@ import ForbiddenError from './../errors/ForbiddenError';
  * @param {Express.Request} req Express Request object
  * @return {Boolean}
  */
-function shouldValidateReqBody(req) {
+function shouldValidateReqBody(req: Request): boolean {
   let isPatchOrPost = req.method === 'PATCH' || req.method === 'POST';
   let isApiRequest = req.path.indexOf('/api') === 0;
+
   return isPatchOrPost && isApiRequest;
 }
 
@@ -22,7 +24,7 @@ function shouldValidateReqBody(req) {
  * @param {Express.Response} res Express Response object
  * @return {Express.Response} res Express Response object
  */
-function handleMissingDataMember(res) {
+function handleMissingDataMember(res: Response): Response {
   let error = new UnprocessableEntity(
     "Missing `data` Member at document's top level."
   );
@@ -40,7 +42,7 @@ function handleMissingDataMember(res) {
  *
  * @return {UnprocessableEntity}
  */
-function buildMissingDataTypeError() {
+function buildMissingDataTypeError(): UnprocessableEntity {
   let missingTypeError = new UnprocessableEntity(
     "Invalid Resource Object. Missing `data.type` Member at Resource Object's top level."
   );
@@ -59,7 +61,7 @@ function buildMissingDataTypeError() {
 *
 * @return {UnprocessableEntity}
 */
-function buildMissingDataIdError() {
+function buildMissingDataIdError(): UnprocessableEntity {
   let missingIdError = new UnprocessableEntity(
     "Invalid Resource Object for PATCH request. Missing `data.id` Member at Resource Object's top level."
   );
@@ -78,7 +80,7 @@ function buildMissingDataIdError() {
  *
  * @return {ForbiddenError}
  */
-function buildHasClientProvidedIdError() {
+function buildHasClientProvidedIdError(): ForbiddenError {
   let hasClientProvidedIdError = new ForbiddenError(
     "Invalid Resource Object for POST request. Client-generated IDs for requests to create new resources is unsupported."
   );
@@ -101,9 +103,9 @@ function buildHasClientProvidedIdError() {
  * @param {Express.Request} req Express Request object
  * @param {Express.Response} res Express Response object
  * @param {Function} next Next Express middleware handler
- * @return {Express.Response}
+ * @return {Express.Response|Express.NextFunction|void}
  */
-export default function validateRequestBody(req, res, next) {
+export default function validateRequestBody(req: Request, res: Response, next: NextFunction): Response|NextFunction|void {
   if (!shouldValidateReqBody(req)) {
     return next();
   }

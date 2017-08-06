@@ -1,6 +1,6 @@
 'use strict';
 
-import * as Express from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import BadRequest from './../errors/BadRequest';
 
@@ -10,7 +10,7 @@ import BadRequest from './../errors/BadRequest';
  * @param {String} contentType Value of the `Content-Type` request header
  * @return {Object}
  */
-function buildUnsupportedMediaTypeError(contentType) {
+function buildUnsupportedMediaTypeError(contentType: string) {
   return {
     status: 415,
     title: 'Unsupported Media Type',
@@ -28,10 +28,10 @@ function buildUnsupportedMediaTypeError(contentType) {
  *
  * @param {Express.Request} req Request object
  * @param {Express.Response} res Response object
- * @param {Function} next Next middleware handler in the chain
- * @return {Mixed}
+ * @param {Express.NextFunction} next Next middleware handler in the chain
+ * @return {Express.Response|Express.NextFunction}
  */
-export default function validateContentTypeMiddleware(req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+export default function validateContentTypeMiddleware(req: Request, res: Response, next: NextFunction): Response|NextFunction {
   let contentType = (req.get('content-type') || '').trim();
   let expected = 'application/vnd.api+json';
 
