@@ -17,9 +17,7 @@ const models = server.models;
 
 Object.keys(models).forEach(modelName => {
   let model = models[modelName];
-  let modelType = inflection.pluralize(
-    StringUtils.convertCamelToDasherized(model.name)
-  );
+  let modelType = model.getType();
 
   describe(`API - generic test for model ${modelType}`, () => {
     let fakeClock = null;
