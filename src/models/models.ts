@@ -6,20 +6,8 @@ const PostAttrs = require('./Post');
 const inflection = require('inflection');
 const StringUtils = require('./../utils/String');
 
-declare module 'sequelize' {
-  export interface Model<TInstance, TAttributes> {
-    getType(): string;
-    name: string;
-  }
-
-  export interface Instance<TInstance, TAttributes> {
-    attributes: Array<string>;    
-    getType(): string;
-  }
-}
-
 // Add JSON API type lookup to Model prototype
-Sequelize.Model['prototype'].getType = function() {
+Sequelize.Model['prototype'].getType = function(): string {
   if (!this.hasOwnProperty('_jsonApiType')) {
     this._jsonApiType = inflection.pluralize(
       StringUtils.convertCamelToDasherized(this.name)
@@ -30,7 +18,7 @@ Sequelize.Model['prototype'].getType = function() {
 };
 
 // Alias to JSON API type lookup on Model
-Sequelize.Instance['prototype'].getType = function() {
+Sequelize.Instance['prototype'].getType = function(): string {
   return this.Model.getType();
 };
 
