@@ -11,19 +11,6 @@ const db = initSequelize();
 import { defineModels } from './models/models';
 const models = defineModels(db);
 
-// TODO: Find more reasonable place to store extended types
-declare module 'sequelize' {
-  export interface Model<TInstance, TAttributes> {
-    getType(): string;
-    name: string;
-  }
-
-  export interface Instance<TInstance, TAttributes> {
-    attributes: Array<string>;    
-    getType(): string;
-  }
-}
-
 import Application from './Application';
 
 let modelDefs = [];
