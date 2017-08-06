@@ -20,6 +20,12 @@ interface ControllerInterface {
 
 export default class Controller implements ControllerInterface {
 
+  /**
+   * The primary model for the controller
+   * 
+   * @property model
+   * @type {Sequelize.Model<any, any>}
+   */
   model: Model<any, any>;
 
   /**
