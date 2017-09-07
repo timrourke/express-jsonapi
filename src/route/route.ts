@@ -24,9 +24,21 @@ import {
 import Controller, { ControllerConstructor } from './../controllers/controller';
 import tryHandlingCrudError from './../jsonapi/errors/tryHandlingCrudError';
 
+/**
+ * Regular expression for removing pagination-related query params from a URL
+ * 
+ * @property {RegExp}
+ * @final
+ */
 const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*/g;
 
-class Route {
+/**
+ * The Route class builds the JSON API routes for a given Sequelize model, and
+ * configures dispatching of actions to that model's controller
+ * 
+ * @class Route
+ */
+export default class Route {
 
   /** 
    * Express application instance
@@ -35,6 +47,11 @@ class Route {
    */
   app: Application;
 
+  /**
+   * The controller class this route should dispatch actions to
+   * 
+   * @property {ControllerConstructor}
+   */
   controllerClass: ControllerConstructor;
 
   /**
@@ -547,5 +564,3 @@ function getUniqueModelArray(modelArray) {
 
   return uniqueModelArray;
 }
-
-module.exports = Route;
