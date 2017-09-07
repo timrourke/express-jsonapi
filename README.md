@@ -16,3 +16,10 @@ The goal of this project is to build an extensible, well-tested framework for cr
     - [x] Servers MUST send all JSON API data in response documents with the header Content-Type: application/vnd.api+json without any media type parameters.
     - [x] Servers MUST respond with a 415 Unsupported Media Type status code if a request specifies the header Content-Type: application/vnd.api+json with any media type parameters.
     - [ ] Servers MUST respond with a 406 Not Acceptable status code if a request’s Accept header contains the JSON API media type and all instances of that media type are modified with media type parameters.
+
+- [ ] [Document Structure](http://jsonapi.org/format/#document-structure)
+	- [ ] [Top Level](http://jsonapi.org/format/#document-top-level)
+		- [x] A JSON object MUST be at the root of every JSON API request and response containing data.
+		- [x] A document MUST contain at least one of the following top-level members: (`data`, `errors`, `meta`)
+		- [x] The members `data` and `errors` MUST NOT coexist in the same document.
+		- [x] A document MAY contain any of these top-level members: (`jsonapi`, `links`, `included`)
