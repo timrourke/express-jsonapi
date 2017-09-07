@@ -5,25 +5,25 @@ import RelationshipLink, { RelationshipLinkConstructor } from './RelationshipLin
 import { Instance } from 'sequelize';
 
 /**
- * Matches an attribute's key name for being a foreign key. If the key appears
- * to be a foreign key, the matching JSON API type string is returned. Otherwise
- * returns false.
+ * Matches an attribute's key name for being a foreign key per Sequelize's
+ * conventions. If the key appears to be a foreign key (eg. `movie-id`), the
+ * matching JSON API type string is returned. Otherwise returns an empty string.
  *
  * @param {String}
- * @return {String|Boolean}
+ * @return {String}
  */
-function foreignKey(attrKeyName) {
+function foreignKey(attrKeyName: String): String {
   let match = attrKeyName.match(/([\w-]+)-id/);
 
-  return (match && match[1]) || false;
+  return (match && match[1]) || "";
 }
 
-class ResourceObject {
+export default class ResourceObject {
 
   /**
    * Sequelize model instance for this Resource Object
    * 
-   * @var {Sequelize.Instance}
+   * @property {Sequelize.Instance}
    */
   modelInstance: Instance<any, any>;
 
@@ -32,7 +32,7 @@ class ResourceObject {
    *
    * @param modelInstance {Sequelize.Instance}
    */
-  constructor(modelInstance) {
+  constructor(modelInstance: Instance<any, any>) {
     this.modelInstance = modelInstance;
   }
 
@@ -42,7 +42,7 @@ class ResourceObject {
    * @param {Array} attributes
    * @return {Object}
    */
-  serializeAttributes(attributes) {
+  private serializeAttributes(attributes) {
     let serializedAttributes = {};
     let instance = this.modelInstance;
     let originalAttrs = instance.attributes.filter(attr => attr !== 'id');
@@ -67,13 +67,11 @@ class ResourceObject {
    *
    * @param {Object} json The object to serialize as JSON
    */
-  serializeRelationships(json) {
+  private serializeRelationships(json) {
     let relationships = Object.keys(this.modelInstance.Model.associations);
     let id = String(this.modelInstance.get('id'));
     let originalAttrs = this.modelInstance.attributes;
-    let foreignKeys = originalAttrs
-      .map(attr => StringUtils.convertCamelToDasherized(attr))
-      .map(attr => foreignKey(attr));
+    let foreignKeys = this.getForeignKeysFromAttrs(originalAttrs);
 
     if (!relationships.length) {
       return;
@@ -81,11 +79,16 @@ class ResourceObject {
 
     json.relationships = {};
 
+    // Append each relationship to the JSON object
     relationships.forEach(rel => {
       json.relationships[rel] = {
         links: new RelationshipLink(this.modelInstance.getType(), id, rel)
       };
 
+      // If the relationship describes a foreign key, we can serialize that as a
+      // Resource Identifier Object
+      //
+      // @see http://jsonapi.org/format/#document-resource-identifier-objects
       if (foreignKeys.indexOf(rel) !== -1) {
         let index = foreignKeys.indexOf(rel);
         json.relationships[rel].data = {
@@ -94,6 +97,19 @@ class ResourceObject {
         };
       }
     });
+  }
+
+  /**
+   * Get foreign keys from an array of attributes
+   * 
+   * @param {[]String} attrs Array of attributes to extract foreign keys from
+   * @return {[]String}
+   */
+  private getForeignKeysFromAttrs(attrs: Array<String>): Array<String> {
+    return attrs
+      .map(attr => StringUtils.convertCamelToDasherized(attr))
+      .map(attr => foreignKey(attr))
+      .filter(attr => !!attr);
   }
 
   /**
@@ -120,5 +136,3 @@ class ResourceObject {
   }
 
 }
-
-module.exports = ResourceObject;

@@ -2,7 +2,7 @@
 
 const inflection = require('inflection');
 const StringUtils = require('../utils/String');
-const JsonApiResourceObject = require('./../jsonapi/ResourceObject');
+import JsonApiResourceObject from './../jsonapi/ResourceObject';
 import ResourceIdentifierObject from './../jsonapi/ResourceIdentifierObject';
 import JsonApiResourceObjectLinks from './../jsonapi/ResourceObjectLinks';
 import NotFoundError from './../jsonapi/errors/NotFoundError';

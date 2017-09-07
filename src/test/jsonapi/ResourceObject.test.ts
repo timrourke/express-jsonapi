@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const ResourceObject = require('./../../jsonapi/ResourceObject');
+import ResourceObject from './../../jsonapi/ResourceObject';
 
 chai.should();
 
