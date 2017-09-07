@@ -6,7 +6,7 @@ import {
     NextFunction
 } from 'express';
 import * as Sequelize from 'sequelize';
-const Route = require('./route/route');
+import Route from './route/route';
 import Controller from './controllers/controller';
 import JsonApiMiddlewareValidateContentType from './jsonapi/middleware/validate-content-type';
 import JsonApiMiddlewareValidateRequestBody from './jsonapi/middleware/validate-request-body';
@@ -14,7 +14,7 @@ import notFoundHandler from './jsonapi/middleware/not-found-handler';
 import InternalServerError from './jsonapi/errors/InternalServerError';
 
 /**
- * Log errors
+ * Express middleware to log errors to stderr
  *
  * @param {Error} err An error, if any
  * @param {Express.Request} req The Express request
@@ -53,7 +53,12 @@ function clientErrorHandler(err: Error, req: Request, res: Response, next: NextF
   });
 }
 
-class Application {
+/**
+ * The Application class defines, configures, and runs the application
+ * 
+ * @class Application
+ */
+export default class Application {
 
     /**
      * Express application instance
@@ -230,5 +235,3 @@ class Application {
         return false;
     }
 }
-
-export default Application;
