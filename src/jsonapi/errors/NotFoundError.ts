@@ -12,7 +12,9 @@ export default class NotFoundError extends BaseError {
   /**
    * The error message
    * 
-   * @property {String}
+   * @property message
+   * @type {String}
+   * @default 'Nothing found.'
    */
   public message: string = "Nothing found.";
   

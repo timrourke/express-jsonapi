@@ -23,7 +23,8 @@ export default class ResourceObject {
   /**
    * Sequelize model instance for this Resource Object
    * 
-   * @property {Sequelize.Instance}
+   * @property modelInstance
+   * @type {Sequelize.Instance}
    */
   modelInstance: Instance<any, any>;
 

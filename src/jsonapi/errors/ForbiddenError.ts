@@ -29,14 +29,17 @@ export default class ForbiddenError extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {LinksAboutInterface}
+   * @property links
+   * @type {LinksAboutInterface}
    */
   public links: LinksAboutInterface;
   
   /**
    * The error message
    * 
-   * @property {String}
+   * @property message
+   * @type {String}
+   * @default 'This request is forbidden.'
    */
   public message: string = 'This request is forbidden.';
 
@@ -45,7 +48,8 @@ export default class ForbiddenError extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {SourcePointerInterface}
+   * @property source
+   * @type {SourcePointerInterface}
    */
   public source: SourcePointerInterface;
 
@@ -68,7 +72,7 @@ export default class ForbiddenError extends BaseError {
    * @method setPointer
    * @param {String} pointer The path to the invalid attribute
    */
-  public setPointer(pointer: string) {
+  public setPointer(pointer: string): void {
     this.source = {
       pointer: pointer
     };

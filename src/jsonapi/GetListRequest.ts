@@ -193,42 +193,48 @@ class GetListRequest {
   /**
    * Array of errors, if any.
    * 
-   * @property {Mixed[]}
+   * @property errors
+   * @type {Mixed[]}
    */
   errors: Array<any>;
 
   /**
    * Include tree
    * 
-   * @property {Object}
+   * @property include
+   * @type {Object}
    */
   include: any;
 
   /**
    * Sequelize Model for this request
    * 
-   * @property {Sequelize.Model}
+   * @property model
+   * @type {Sequelize.Model}
    */
   model: Model<any, any>;
 
   /**
    * Array of orders, where each element is a tuple containing the attr name and the sort direction
    * 
-   * @property {Array[]}
+   * @property orders
+   * @type {Array[]}
    */
   orders: Array<Array<string>>;
 
   /**
    * Pagination constraints for query
    * 
-   * @property {Object}
+   * @property pagination
+   * @type {Object}
    */
   pagination: any;
 
   /**
    * Sequelize query params to set query constraints
    * 
-   * @property {Object}
+   * @property sequelizeQueryParams
+   * @type {Object}
    */
   sequelizeQueryParams: any;
 

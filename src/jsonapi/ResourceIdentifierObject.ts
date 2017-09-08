@@ -12,7 +12,9 @@ export default class ResourceIdentifierObject {
   /**
    * The Sequelize model instance for this Resource Identifier Object
    * 
-   * @property {Sequelize.Instance}
+   * @property modelInstance
+   * @type {Sequelize.Instance}
+   * @private
    */
   private modelInstance: Instance<any, any>;
 

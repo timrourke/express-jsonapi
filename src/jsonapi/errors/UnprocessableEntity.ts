@@ -29,14 +29,16 @@ export default class UnprocessableEntity extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {LinksAboutInterface}
+   * @property links
+   * @type {LinksAboutInterface}
    */
   public links: LinksAboutInterface;
 
   /**
    * The error message
    * 
-   * @property {String}
+   * @property message
+   * @type {String}
    */
   public message: string = "Unprocessable entity";
   
@@ -45,7 +47,8 @@ export default class UnprocessableEntity extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {SourcePointerInterface}
+   * @property source
+   * @type {SourcePointerInterface}
    */
   public source: SourcePointerInterface;
 
@@ -54,7 +57,8 @@ export default class UnprocessableEntity extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {String}
+   * @property title
+   * @type {String}
    */
   public title: string = 'Unprocessable Entity';
 

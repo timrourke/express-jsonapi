@@ -14,13 +14,17 @@ export default class ResourceObjectLinks {
    * JSON API links object for this Resource Object
    * 
    * @see http://jsonapi.org/format/#document-links
+   * 
+   * @property links
+   * @type {LinksInterface}
    */
   links: LinksInterface;
 
   /**
    * Sequelize model instance to build links for
    * 
-   * @var {Sequelize.Instance}
+   * @property modelInstance
+   * @type {Sequelize.Instance}
    */
   modelInstance: Instance<any, any>;
 
@@ -29,7 +33,7 @@ export default class ResourceObjectLinks {
    *
    * @param modelInstance {Sequelize.Instance}
    */
-  constructor(modelInstance) {
+  constructor(modelInstance: Instance<any, any>) {
     this.modelInstance = modelInstance;
 
     let baseUrl = config.getApiBaseUrl();

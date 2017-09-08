@@ -14,14 +14,17 @@ export default class BadRequest extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {mixed}
+   * @property links
+   * @type {mixed}
    */
   public links: any;
 
   /**
    * The error message
    * 
-   * @property {String}
+   * @property message
+   * @type {String}
+   * @default 'Bad request.'
    */
   public message: string = 'Bad request.';
 
@@ -31,7 +34,8 @@ export default class BadRequest extends BaseError {
    *
    * @see http://jsonapi.org/format/#errors
    *
-   * @property {mixed}
+   * @property source
+   * @type {mixed}
    */
   public source: any;
 

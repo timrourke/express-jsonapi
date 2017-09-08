@@ -20,21 +20,24 @@ export default class RelationshipLink implements RelationshipLinkInterface {
   /**
    * Model route name for link
    * 
-   * @var {String}
+   * @property modelRoute
+   * @type {String}
    */
   modelRoute: string;
 
   /**
    * Model ID for link
    * 
-   * @var {String}
+   * @property modelId
+   * @type {String}
    */
   modelId: string;
 
   /**
    * Relationship name
    * 
-   * @var {String}
+   * @property relationship
+   * @type {String}
    */
   relationship: string;
 
