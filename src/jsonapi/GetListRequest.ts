@@ -185,14 +185,14 @@ function buildPaginationErrOffsetLessThanMin(pageParam: string, invalidValue: an
 /**
  * GetListRequest describes a get list request that can be validated to ensure
  * compliance with JSON API
- * 
+ *
  * @class GetListRequest
  */
 class GetListRequest {
 
   /**
    * Array of errors, if any.
-   * 
+   *
    * @property errors
    * @type {Mixed[]}
    */
@@ -200,7 +200,7 @@ class GetListRequest {
 
   /**
    * Include tree
-   * 
+   *
    * @property include
    * @type {Object}
    */
@@ -208,7 +208,7 @@ class GetListRequest {
 
   /**
    * Sequelize Model for this request
-   * 
+   *
    * @property model
    * @type {Sequelize.Model}
    */
@@ -216,7 +216,7 @@ class GetListRequest {
 
   /**
    * Array of orders, where each element is a tuple containing the attr name and the sort direction
-   * 
+   *
    * @property orders
    * @type {Array[]}
    */
@@ -224,7 +224,7 @@ class GetListRequest {
 
   /**
    * Pagination constraints for query
-   * 
+   *
    * @property pagination
    * @type {Object}
    */
@@ -307,98 +307,181 @@ class GetListRequest {
   }
 
   /**
+   * Whether the pagination params have a value for 'offset'
+   *
+   * @method paginationHasOffset
+   * @return {Boolean}
+   */
+  private paginationHasOffset(): boolean {
+    return this.pagination.hasOwnProperty('offset') &&
+      this.pagination.offset;
+  }
+
+  /**
+   * Whether the pagination params have a value for 'limit'
+   *
+   * @method paginationHasLimit
+   * @return {Boolean}
+   */
+  private paginationHasLimit(): boolean {
+    return this.pagination.hasOwnProperty('limit') &&
+      this.pagination.limit;
+  }
+
+  /**
+   * Whether the pagination params have a value for 'number'
+   *
+   * @method paginationHasNumber
+   * @return {Boolean}
+   */
+  private paginationHasNumber(): boolean {
+    return this.pagination.hasOwnProperty('number') &&
+      this.pagination.number;
+  }
+
+  /**
+   * Whether the pagination params have a value for 'size'
+   *
+   * @method paginationHasSize
+   * @return {Boolean}
+   */
+  private paginationHasSize(): boolean {
+    return this.pagination.hasOwnProperty('size') &&
+      this.pagination.size;
+  }
+
+  /**
+   * Check the parsed value of a pagination query param for errors
+   *
+   * @param {String} paramName String name of the query param to check for errors
+   * @param {mixed} parsedValue Parsed value of the query param to check for errors
+   * @param {String} minimumString String to describe the minimum possible value for the
+   *   query param in question in the error message if parsedValue < allowed min
+   * @param {BadRequest[]} errors Array of errors
+   */
+  private checkParsedPaginationParamForErrors(
+    paramName: string,
+    parsedValue: any,
+    minimumString: string,
+    errors: Array<BadRequest>
+  ): void {
+    if (isNaN(parsedValue)) {
+      errors.push(buildPaginationErrIsNaN(paramName, this.pagination[paramName]));
+    } else if (parsedValue < 0) {
+      errors.push(
+        buildPaginationErrOffsetLessThanMin(
+          paramName,
+          this.pagination[paramName],
+          minimumString
+        )
+      );
+    }
+  }
+
+  /**
+   * Calculate the limit for the LIMIT clause when using the offset/limit
+   * pagination strategy
+   *
+   * @method calculateLimitForOffsetLimitStrategy
+   * @param {BadRequest[]} errors Array of errors
+   * @return {Number}
+   */
+  private calculateLimitForOffsetLimitStrategy(errors: Array<BadRequest>): number {
+    const limit = (this.paginationHasLimit()) ?
+      parseInt(this.pagination.limit, 10) :
+      20;
+
+    this.checkParsedPaginationParamForErrors('limit', limit, '0 (zero)', errors);
+
+    return limit
+  }
+
+  /**
+   * Calculate the offset for the LIMIT clause when using the offset/limit
+   * pagination strategy
+   *
+   * @method calculateOffsetForOffsetLimitStrategy
+   * @param {BadRequest[]} errors Array of errors
+   * @return {Number}
+   */
+  private calculateOffsetForOffsetLimitStrategy(errors: Array<BadRequest>): number {
+    const offset = (this.paginationHasOffset()) ?
+      parseInt(this.pagination.offset, 10) :
+      0;
+
+    this.checkParsedPaginationParamForErrors('offset', offset, '0 (zero)', errors);
+
+    return offset;
+  }
+
+  /**
+   * Calculate the limit for the LIMIT clause when using the page number/size
+   * pagination strategy
+   *
+   * @method calculateLimitForPageNumberSizeStrategy
+   * @param {BadRequest[]} errors Array of errors
+   * @return {Number}
+   */
+  private calculateLimitForPageNumberSizeStrategy(errors: Array<BadRequest>): number {
+    const limit = (this.paginationHasSize()) ?
+      parseInt(this.pagination.size, 10) :
+      20;
+
+    this.checkParsedPaginationParamForErrors('size', limit, '0 (zero)', errors);
+
+    return limit;
+  }
+
+  /**
+   * Calculate the offset for the LIMIT clause when using the page number/size
+   * pagination strategy
+   *
+   * @method calculateOffsetForPageNumberSizeStrategy
+   * @param {Number} limit Parsed value of the limit for pagination
+   * @param {BadRequest[]} errors Array of errors
+   * @return {Number}
+   */
+  private calculateOffsetForPageNumberSizeStrategy(limit: number, errors: Array<BadRequest>): number {
+    const offset = (this.paginationHasNumber()) ?
+      (parseInt(this.pagination.number, 10) * limit) - limit :
+      0;
+
+    this.checkParsedPaginationParamForErrors('number', offset, '1 (one)', errors);
+
+    return offset;
+  }
+
+  /**
    * Validate pagination
    *
    * @method validatePagination
    * @return {BadRequest[]} Array of errors, if any
    */
   private validatePagination(): Array<BadRequest> {
-    let hasOffset = this.pagination.hasOwnProperty('offset') && this.pagination.offset;
-    let hasLimit  = this.pagination.hasOwnProperty('limit') && this.pagination.limit;
-    let hasNumber = this.pagination.hasOwnProperty('number') && this.pagination.number;
-    let hasSize   = this.pagination.hasOwnProperty('size') && this.pagination.size;
-    let offset    = 0;
-    let limit     = 20;
-    let errors    = [];
+    let offset = 0;
+    let limit = 20;
+    let errors: Array<BadRequest> = [];
 
     // Check for mutually exclusive params "page[offset]" and "page[number]"
-    if (hasOffset && hasNumber) {
+    if (this.paginationHasOffset() && this.paginationHasNumber()) {
       errors.push(buildPaginationErrHasOffsetAndNumber());
     }
 
     // Check for mutually exclusive params "page[limit]" and "page[size]"
-    if (hasLimit && hasSize) {
+    if (this.paginationHasLimit() && this.paginationHasSize()) {
       errors.push(buildPaginationErrHasLimitAndSize());
     }
 
     // Calculate and validate the offset and limit for the offset/limit strategy
-    if (hasLimit || hasOffset) {
-      limit = (hasLimit) ?
-        parseInt(this.pagination.limit, 10) :
-        20;
-
-        if (isNaN(limit)) {
-          errors.push(buildPaginationErrIsNaN('limit', this.pagination.limit));
-        } else if (limit < 0) {
-          errors.push(
-            buildPaginationErrOffsetLessThanMin(
-              'limit',
-              this.pagination.limit,
-              '0 (zero)'
-            )
-          );
-        }
-
-      offset = (hasOffset) ?
-        parseInt(this.pagination.offset, 10) :
-        0;
-
-        if (isNaN(offset)) {
-          errors.push(buildPaginationErrIsNaN('offset', this.pagination.offset));
-        } else if (offset < 0) {
-          errors.push(
-            buildPaginationErrOffsetLessThanMin(
-              'offset',
-              this.pagination.offset,
-              '0 (zero)'
-            )
-          );
-        }
+    if (this.paginationHasLimit() || this.paginationHasOffset()) {
+      limit = this.calculateLimitForOffsetLimitStrategy(errors);
+      offset = this.calculateOffsetForOffsetLimitStrategy(errors);
     }
 
     // Calculate and validate offset and limit for the page/size strategy
-    if (hasNumber || hasSize) {
-      limit = (hasSize) ?
-        parseInt(this.pagination.size, 10) :
-        20;
-
-        if (isNaN(limit)) {
-          errors.push(buildPaginationErrIsNaN('size', this.pagination.size));
-        } else if (limit < 0) {
-          errors.push(
-            buildPaginationErrOffsetLessThanMin(
-              'size',
-              this.pagination.size,
-              '0 (zero)'
-            )
-          );
-        }
-
-      offset = (hasNumber) ?
-        (parseInt(this.pagination.number, 10) * limit) - limit :
-        0;
-
-        if (isNaN(offset)) {
-          errors.push(buildPaginationErrIsNaN('number', this.pagination.number));
-        } else if (offset < 0) {
-          errors.push(
-            buildPaginationErrOffsetLessThanMin(
-              'number',
-              this.pagination.number,
-              '1 (one)'
-            )
-          );
-        }
+    if (this.paginationHasNumber() || this.paginationHasSize()) {
+      limit = this.calculateLimitForPageNumberSizeStrategy(errors);
+      offset = this.calculateOffsetForPageNumberSizeStrategy(limit, errors);
     }
 
     Object.assign(this.sequelizeQueryParams, {
@@ -444,9 +527,9 @@ class GetListRequest {
  * @param {Object} parent The parent branch of the include graph
  * @param {Sequelize.Model} currentModel The Sequelize Model representing the parent branch
  * @param {Object} includeStatement The Sequelize query object to pass to the query builder
- * @param {Array} errors An array of BadRequest errors
+ * @param {BadRequest[]} errors An array of BadRequest errors
  */
-function validateSingleInclude(parent, currentModel: Model<any, any>, includeStatement, errors: Array<BadRequest>) {
+function validateSingleInclude(parent, currentModel: Model<any, any>, includeStatement, errors: Array<BadRequest>): void {
   // Iterate over each child of the parent branch of the include branch and try
   // to validate and build a query object for it
   Object.keys(parent).forEach(child => {
