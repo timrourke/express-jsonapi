@@ -16,9 +16,9 @@ export default class InternalServerError extends BaseError {
    */
   public toJSON(): any {
     return {
+      detail: 'There was an internal error processing your request. Please try again, or contact the system administrator.',
       status: 500,
       title: 'Internal Server Error',
-      detail: 'There was an internal error processing your request. Please try again, or contact the system administrator.', // tslint:disable-line
     };
   }
 

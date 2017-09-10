@@ -1,8 +1,8 @@
 'use strict';
 
 import { Error as SequelizeError, Model, ValidationError } from 'sequelize';
+import StringUtils from './../../utils/String';
 import UnprocessableEntity from './UnprocessableEntity';
-const StringUtils = require('./../../utils/String'); // tslint:disable-line
 import inflection = require('inflection');
 const titleize = inflection.titleize;
 const underscore = inflection.underscore;
@@ -23,7 +23,7 @@ function buildValidationError(sequelizeErrorItem, modelName: string): Unprocessa
 
   switch (sequelizeErrorItem.type) {
     case 'unique violation':
-      msg = `${modelTitle}'s ${attr.replace(/-/g, ' ')} must be unique. "${sequelizeErrorItem.value}" was already chosen.`; // tslint:disable-line
+      msg = `${modelTitle}'s ${attr.replace(/-/g, ' ')} must be unique. "${sequelizeErrorItem.value}" was already chosen.`;
       break;
     case 'notNull Violation':
       msg = `${modelTitle}'s ${attr.replace(/-/g, ' ')} is required.`;

@@ -31,7 +31,11 @@ function buildUnsupportedMediaTypeError(contentType: string) {
  * @param {Express.NextFunction} next Next middleware handler in the chain
  * @return {Express.Response|Express.NextFunction}
  */
-export default function validateContentTypeMiddleware(req: Request, res: Response, next: NextFunction): Response|NextFunction { // tslint:disable-line
+export default function validateContentTypeMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Response|NextFunction {
   const contentType = (req.get('content-type') || '').trim();
   const expected = 'application/vnd.api+json';
 

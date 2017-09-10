@@ -2,8 +2,8 @@
 
 import { NextFunction, Request, Response } from 'express';
 import { Instance, Model } from 'sequelize';
-import BadRequest from './errors/BadRequest';
 import StringUtils from './../utils/String';
+import BadRequest from './errors/BadRequest';
 
 /**
  * Parses the JSON API include param and builds a multidimensional graph of
@@ -31,22 +31,22 @@ import StringUtils from './../utils/String';
  * @param {String} includeParam The JSON API include param
  * @return {Object}
  */
-function parseInclude(includeParam = ""): any {
+function parseInclude(includeParam = ''): any {
   if (!includeParam) {
     return {};
   }
 
-  let includesTree = {};
-  let flatIncludesArray = includeParam
+  const includesTree = {};
+  const flatIncludesArray = includeParam
     .split(',')
-    .map(string => string.split('.'));
+    .map((str) => str.split('.'));
 
   // Traverse each flat array of relationships and build a multi-dimensional
   // object to hold the graph of relationships
-  flatIncludesArray.forEach(includesArray => {
+  flatIncludesArray.forEach((includesArray) => {
     let branch = includesTree;
 
-    includesArray.forEach(include => {
+    includesArray.forEach((include) => {
       if (branch[include] && Object.keys(branch[include]).length) {
         branch[include] = Object.assign({}, branch[include]);
       } else {
@@ -69,8 +69,8 @@ function parseInclude(includeParam = ""): any {
 function parsePagination(queryParams: any): any {
   if (!queryParams.hasOwnProperty('page')) {
     return {
+      limit: 20,
       offset: 0,
-      limit: 20
     };
   }
 
@@ -81,16 +81,16 @@ function parsePagination(queryParams: any): any {
  * Parse the query params for sorting
  *
  * @param {Object} queryParams Request query params
- * @return {Array}
+ * @return {String[][]}
  */
-function parseSort(queryParams: any): Array<Array<string>> {
+function parseSort(queryParams: any): string[][] {
   if (!queryParams.hasOwnProperty('sort')) {
     return [];
   }
 
   return queryParams.sort
     .split(',')
-    .map(attrName => {
+    .map((attrName) => {
       let direction = 'ASC';
 
       if (attrName.indexOf('-') === 0) {
@@ -109,8 +109,8 @@ function parseSort(queryParams: any): Array<Array<string>> {
  * @return {BadRequest}
  */
 function buildSortErrorInvalidAttr(attrName: string): BadRequest {
-  let msg = `Cannot sort by "${attrName}". The resource does not have an attribute called "${attrName}"`;
-  let error = new BadRequest(msg);
+  const msg = `Cannot sort by "${attrName}". The resource does not have an attribute called "${attrName}"`;
+  const error = new BadRequest(msg);
 
   error.setSource('sort');
 
@@ -124,8 +124,8 @@ function buildSortErrorInvalidAttr(attrName: string): BadRequest {
  * @return {BadRequest}
  */
 function buildPaginationErrHasOffsetAndNumber(): BadRequest {
-  let msg = `Invalid pagination strategy. Use of "page[number]" and "page[offset]" as pagination params are mutually exclusive. Please use one or the other.`;
-  let error = new BadRequest(msg);
+  const msg = `Invalid pagination strategy. Use of "page[number]" and "page[offset]" as pagination params are mutually exclusive. Please use one or the other.`;
+  const error = new BadRequest(msg);
 
   error.setSource('page');
 
@@ -139,8 +139,8 @@ function buildPaginationErrHasOffsetAndNumber(): BadRequest {
  * @return {BadRequest}
  */
 function buildPaginationErrHasLimitAndSize(): BadRequest {
-  let msg = `Invalid pagination strategy. Use of "page[limit]" and "page[size]" as pagination params are mutually exclusive. Please use one or the other.`;
-  let error = new BadRequest(msg);
+  const msg = `Invalid pagination strategy. Use of "page[limit]" and "page[size]" as pagination params are mutually exclusive. Please use one or the other.`;
+  const error = new BadRequest(msg);
 
   error.setSource('page');
 
@@ -156,8 +156,8 @@ function buildPaginationErrHasLimitAndSize(): BadRequest {
  * @return {BadRequest}
  */
 function buildPaginationErrIsNaN(pageParam: string, invalidValue: any): BadRequest {
-  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must be a number.`;
-  let error = new BadRequest(msg);
+  const msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must be a number.`;
+  const error = new BadRequest(msg);
 
   error.setSource(`page[${pageParam}]`);
 
@@ -174,8 +174,8 @@ function buildPaginationErrIsNaN(pageParam: string, invalidValue: any): BadReque
  * @return {BadRequest}
  */
 function buildPaginationErrOffsetLessThanMin(pageParam: string, invalidValue: any, minimum: string): BadRequest {
-  let msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must not be a number lower than ${minimum}.`;
-  let error = new BadRequest(msg);
+  const msg = `Invalid pagination param "page[${pageParam}]" ("${invalidValue}"). "page[${pageParam}]" must not be a number lower than ${minimum}.`;
+  const error = new BadRequest(msg);
 
   error.setSource(`page[${pageParam}]`);
 
@@ -196,7 +196,7 @@ export default class GetListRequest {
    * @property errors
    * @type {Mixed[]}
    */
-  errors: Array<any>;
+  private errors: any[];
 
   /**
    * Include tree
@@ -204,7 +204,7 @@ export default class GetListRequest {
    * @property include
    * @type {Object}
    */
-  include: any;
+  private include: any;
 
   /**
    * Sequelize Model for this request
@@ -212,15 +212,15 @@ export default class GetListRequest {
    * @property model
    * @type {Sequelize.Model}
    */
-  model: Model<any, any>;
+  private model: Model<any, any>;
 
   /**
    * Array of orders, where each element is a tuple containing the attr name and the sort direction
    *
    * @property orders
-   * @type {Array[]}
+   * @type {String[][]}
    */
-  orders: Array<Array<string>>;
+  private orders: string[][];
 
   /**
    * Pagination constraints for query
@@ -228,7 +228,7 @@ export default class GetListRequest {
    * @property pagination
    * @type {Object}
    */
-  pagination: any;
+  private pagination: any;
 
   /**
    * Sequelize query params to set query constraints
@@ -236,7 +236,7 @@ export default class GetListRequest {
    * @property sequelizeQueryParams
    * @type {Object}
    */
-  sequelizeQueryParams: any;
+  private sequelizeQueryParams: any;
 
   /**
    * Constructor.
@@ -246,7 +246,7 @@ export default class GetListRequest {
    * @param {Sequelize.Model} model The Sequelize model definition
    */
   constructor(req: Request, model: Model<any, any>) {
-    let queryParams = (req.hasOwnProperty('query')) ?
+    const queryParams = (req.hasOwnProperty('query')) ?
       req.query :
       {};
 

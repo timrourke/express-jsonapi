@@ -41,8 +41,7 @@ function handleMissingDataMember(res: Response): Response {
  * @return {UnprocessableEntity}
  */
 function buildMissingDataTypeError(): UnprocessableEntity {
-  const missingTypeError = new UnprocessableEntity('Invalid Resource Object. Missing `data.type` Member at Resource Object\'s top level.'); // tslint:disable-line
-
+  const missingTypeError = new UnprocessableEntity('Invalid Resource Object. Missing `data.type` Member at Resource Object\'s top level.');
   missingTypeError.setPointer('/data');
   missingTypeError.links = {
     about: 'http://jsonapi.org/format/#document-resource-objects',
@@ -58,7 +57,7 @@ function buildMissingDataTypeError(): UnprocessableEntity {
  * @return {UnprocessableEntity}
  */
 function buildMissingDataIdError(): UnprocessableEntity {
-  const missingIdError = new UnprocessableEntity('Invalid Resource Object for PATCH request. Missing `data.id` Member at Resource Object\'s top level.'); // tslint:disable-line
+  const missingIdError = new UnprocessableEntity('Invalid Resource Object for PATCH request. Missing `data.id` Member at Resource Object\'s top level.');
 
   missingIdError.setPointer('/data');
   missingIdError.links = {
@@ -75,7 +74,7 @@ function buildMissingDataIdError(): UnprocessableEntity {
  * @return {ForbiddenError}
  */
 function buildHasClientProvidedIdError(): ForbiddenError {
-  const hasClientProvidedIdError = new ForbiddenError('Invalid Resource Object for POST request. Client-generated IDs for requests to create new resources is unsupported.'); // tslint:disable-line
+  const hasClientProvidedIdError = new ForbiddenError('Invalid Resource Object for POST request. Client-generated IDs for requests to create new resources is unsupported.');
 
   hasClientProvidedIdError.setPointer('/data/id');
   hasClientProvidedIdError.links = {
@@ -97,7 +96,11 @@ function buildHasClientProvidedIdError(): ForbiddenError {
  * @param {Function} next Next Express middleware handler
  * @return {Express.Response|Express.NextFunction|void}
  */
-export default function validateRequestBody(req: Request, res: Response, next: NextFunction): Response|NextFunction|void { // tslint:disable-line
+export default function validateRequestBody(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Response|NextFunction|void {
   if (!shouldValidateReqBody(req)) {
     return next();
   }
