@@ -4,10 +4,10 @@ const Sequelize = require('sequelize');
 
 module.exports = {
   createdAt: {
-    type: Sequelize.DATE
+    type: Sequelize.DATE,
   },
   updatedAt: {
-    type: Sequelize.DATE
+    type: Sequelize.DATE,
   },
   firstName: {
     type: Sequelize.STRING,
@@ -15,9 +15,9 @@ module.exports = {
     validate: {
       notEmpty: {
         args: true,
-        msg: "User's first name is required."
+        msg: "User's first name is required.",
       },
-    }
+    },
   },
   lastName: {
     type: Sequelize.STRING,
@@ -25,9 +25,9 @@ module.exports = {
     validate: {
       notEmpty: {
         args: true,
-        msg: "User's last name is required."
+        msg: "User's last name is required.",
       },
-    }
+    },
   },
   email: {
     type: Sequelize.STRING,
@@ -35,13 +35,13 @@ module.exports = {
     validate: {
       notEmpty: {
         args: true,
-        msg: "User's email is required."
+        msg: "User's email is required.",
       },
       isEmail: {
         args: true,
-        msg: "User's email must be a valid email address."
-      }
-    }
+        msg: "User's email must be a valid email address.",
+      },
+    },
   },
   passwordHash: {
     type: Sequelize.STRING,
@@ -49,8 +49,8 @@ module.exports = {
     validate: {
       notEmpty: {
         args: true,
-        msg: "User's password is required."
-      }
-    }
+        msg: "User's password is required.",
+      },
+    },
   },
 };

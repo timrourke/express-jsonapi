@@ -163,7 +163,7 @@ rules:
   capitalized-comments: off
   comma-dangle:
     - error
-    - never
+    - always
   comma-spacing: off
   comma-style: off
   computed-property-spacing: off

@@ -512,7 +512,6 @@ export default class GetListRequest {
       const [attrName, direction] = sort;
       const columnName = StringUtils.convertDasherizedToCamelCase(attrName);
 
-      // TODO: support sorting on fields that are not columns of the model
       if (this.model.attributes && !this.model.attributes.hasOwnProperty(columnName)) {
         errors.push(buildSortErrorInvalidAttr(attrName));
       }

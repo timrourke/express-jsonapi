@@ -4,12 +4,13 @@ process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
+import server from '../server';
 import Factory from './../factories/all';
-const server = require('../server');
-const model = server.models.user;
 
 chai.should();
 chai.use(chaiHttp);
+
+const model = server.models.user;
 
 const firstNames = [
   'Fred',

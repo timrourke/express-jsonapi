@@ -4,8 +4,8 @@ process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
+import server from '../server';
 import Factory from './../factories/all';
-const server = require('../server');
 
 chai.should();
 chai.use(chaiHttp);

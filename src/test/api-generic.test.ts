@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
-const server = require('../server');
+import server from '../server';
 import inflection = require('inflection');
 import sinon = require('sinon');
 import Factory from './../factories/all';

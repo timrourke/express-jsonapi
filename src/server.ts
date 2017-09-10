@@ -34,7 +34,7 @@ myApp.configureMiddlewares([
 myApp.serve(3000);
 
 // Export the application instance for testing
-module.exports = {
+export default {
   app: myApp.getExpressApp(),
   db,
   models: {

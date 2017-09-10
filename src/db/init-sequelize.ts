@@ -1,6 +1,6 @@
 'use strict';
 
-const dbConfig = require('./../config/database.json');
+const dbConfig = require('./../config/database.json'); // tslint:disable-line
 import * as Sequelize from 'sequelize';
 
 /**
@@ -29,6 +29,6 @@ export default function initSequelize(): Sequelize.Connection {
   const shouldLogQueries = dbConfig[process.env.NODE_ENV].logging;
 
   return new Sequelize(buildConnectionString(process.env.NODE_ENV), {
-    logging: shouldLogQueries
+    logging: shouldLogQueries,
   });
 }

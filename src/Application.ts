@@ -151,7 +151,7 @@ export default class Application {
 
         const PORT_NORMALIZED = this.normalizePort(port);
         this.expressApp.listen(PORT_NORMALIZED);
-        console.log('Running on http://localhost:' + PORT_NORMALIZED);
+        console.log('Running on http://localhost:' + PORT_NORMALIZED); // tslint:disable-line
     }
 
     /**

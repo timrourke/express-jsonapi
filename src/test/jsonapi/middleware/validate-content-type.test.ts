@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
-const server = require('./../../../server');
+import server from './../../../server';
 
 chai.should();
 chai.use(chaiHttp);
