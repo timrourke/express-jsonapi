@@ -3,11 +3,8 @@ import validateRequestBody from './../../../jsonapi/middleware/validate-request-
 const express = require('express');
 const httpMocks = require('node-mocks-http');
 import * as chai from 'chai';
-//const chaiHttp = require('chai-http');
-//const server = require('./../../../server');
 
 chai.should();
-//chai.use(chaiHttp);
 
 describe('jsonapi middleware', () => {
   describe('validate-request-body', () => {
