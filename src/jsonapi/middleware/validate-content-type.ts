@@ -1,6 +1,6 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import BadRequest from './../errors/BadRequest';
 
@@ -12,12 +12,12 @@ import BadRequest from './../errors/BadRequest';
  */
 function buildUnsupportedMediaTypeError(contentType: string) {
   return {
-    status: 415,
-    title: 'Unsupported Media Type',
     detail: `Media type parameters or modifications to JSON API Content-Type header not supported ("${contentType}")`,
     links: {
-      about: 'http://jsonapi.org/format/#content-negotiation-clients'
-    }
+      about: 'http://jsonapi.org/format/#content-negotiation-clients',
+    },
+    status: 415,
+    title: 'Unsupported Media Type',
   };
 }
 
@@ -31,28 +31,28 @@ function buildUnsupportedMediaTypeError(contentType: string) {
  * @param {Express.NextFunction} next Next middleware handler in the chain
  * @return {Express.Response|Express.NextFunction}
  */
-export default function validateContentTypeMiddleware(req: Request, res: Response, next: NextFunction): Response|NextFunction {
-  let contentType = (req.get('content-type') || '').trim();
-  let expected = 'application/vnd.api+json';
+export default function validateContentTypeMiddleware(req: Request, res: Response, next: NextFunction): Response|NextFunction { // tslint:disable-line
+  const contentType = (req.get('content-type') || '').trim();
+  const expected = 'application/vnd.api+json';
 
   // Return error if `Content-Type` request header contains the JSON API
   // descriptor but contains any other additional text
   if (contentType.indexOf(expected) !== -1 && contentType !== expected) {
     return res.status(415).json({
-      errors: [buildUnsupportedMediaTypeError(contentType)]
+      errors: [buildUnsupportedMediaTypeError(contentType)],
     });
 
   // Return error if `Content-Type` request header does not contain the JSON
   // API descriptor at all
   } else if (contentType !== expected) {
-    let error = new BadRequest(`Unsupported value for Content-Type header ("${contentType}")`);
+    const error = new BadRequest(`Unsupported value for Content-Type header ("${contentType}")`);
 
     error.links = {
-      about: 'http://jsonapi.org/format/#content-negotiation-clients'
+      about: 'http://jsonapi.org/format/#content-negotiation-clients',
     };
 
     return res.status(400).json({
-      errors: [error]
+      errors: [error],
     });
   }
 

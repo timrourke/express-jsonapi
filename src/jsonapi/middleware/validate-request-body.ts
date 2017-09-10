@@ -1,8 +1,8 @@
 'use strict';
 
-import UnprocessableEntity from './../errors/UnprocessableEntity';
+import { NextFunction, Request, Response } from 'express';
 import ForbiddenError from './../errors/ForbiddenError';
-import { Request, Response, NextFunction } from 'express';
+import UnprocessableEntity from './../errors/UnprocessableEntity';
 
 /**
  * Whether the request body should be validated. GET and DELETE requests do not
@@ -12,8 +12,8 @@ import { Request, Response, NextFunction } from 'express';
  * @return {Boolean}
  */
 function shouldValidateReqBody(req: Request): boolean {
-  let isPatchOrPost = req.method === 'PATCH' || req.method === 'POST';
-  let isApiRequest = req.path.indexOf('/api') === 0;
+  const isPatchOrPost = req.method === 'PATCH' || req.method === 'POST';
+  const isApiRequest = req.path.indexOf('/api') === 0;
 
   return isPatchOrPost && isApiRequest;
 }
@@ -25,14 +25,12 @@ function shouldValidateReqBody(req: Request): boolean {
  * @return {Express.Response} res Express Response object
  */
 function handleMissingDataMember(res: Response): Response {
-  let error = new UnprocessableEntity(
-    "Missing `data` Member at document's top level."
-  );
+  const error = new UnprocessableEntity('Missing `data` Member at document\'s top level.');
 
   error.setPointer('');
 
   return res.status(422).json({
-    errors: [error]
+    errors: [error],
   });
 }
 
@@ -43,32 +41,28 @@ function handleMissingDataMember(res: Response): Response {
  * @return {UnprocessableEntity}
  */
 function buildMissingDataTypeError(): UnprocessableEntity {
-  let missingTypeError = new UnprocessableEntity(
-    "Invalid Resource Object. Missing `data.type` Member at Resource Object's top level."
-  );
+  const missingTypeError = new UnprocessableEntity('Invalid Resource Object. Missing `data.type` Member at Resource Object\'s top level.'); // tslint:disable-line
 
   missingTypeError.setPointer('/data');
   missingTypeError.links = {
-    about: 'http://jsonapi.org/format/#document-resource-objects'
+    about: 'http://jsonapi.org/format/#document-resource-objects',
   };
 
   return missingTypeError;
 }
 
 /**
-* Build an error object for a missing `data.id` member in the request body's
-* Resource Object
-*
-* @return {UnprocessableEntity}
-*/
+ * Build an error object for a missing `data.id` member in the request body's
+ * Resource Object
+ *
+ * @return {UnprocessableEntity}
+ */
 function buildMissingDataIdError(): UnprocessableEntity {
-  let missingIdError = new UnprocessableEntity(
-    "Invalid Resource Object for PATCH request. Missing `data.id` Member at Resource Object's top level."
-  );
+  const missingIdError = new UnprocessableEntity('Invalid Resource Object for PATCH request. Missing `data.id` Member at Resource Object\'s top level.'); // tslint:disable-line
 
   missingIdError.setPointer('/data');
   missingIdError.links = {
-    about: 'http://jsonapi.org/format/#document-resource-objects'
+    about: 'http://jsonapi.org/format/#document-resource-objects',
   };
 
   return missingIdError;
@@ -81,13 +75,11 @@ function buildMissingDataIdError(): UnprocessableEntity {
  * @return {ForbiddenError}
  */
 function buildHasClientProvidedIdError(): ForbiddenError {
-  let hasClientProvidedIdError = new ForbiddenError(
-    "Invalid Resource Object for POST request. Client-generated IDs for requests to create new resources is unsupported."
-  );
+  const hasClientProvidedIdError = new ForbiddenError('Invalid Resource Object for POST request. Client-generated IDs for requests to create new resources is unsupported.'); // tslint:disable-line
 
   hasClientProvidedIdError.setPointer('/data/id');
   hasClientProvidedIdError.links = {
-    about: 'http://jsonapi.org/format/#crud-creating'
+    about: 'http://jsonapi.org/format/#crud-creating',
   };
 
   return hasClientProvidedIdError;
@@ -105,12 +97,12 @@ function buildHasClientProvidedIdError(): ForbiddenError {
  * @param {Function} next Next Express middleware handler
  * @return {Express.Response|Express.NextFunction|void}
  */
-export default function validateRequestBody(req: Request, res: Response, next: NextFunction): Response|NextFunction|void {
+export default function validateRequestBody(req: Request, res: Response, next: NextFunction): Response|NextFunction|void { // tslint:disable-line
   if (!shouldValidateReqBody(req)) {
     return next();
   }
 
-  let errors = [];
+  const errors = [];
 
   // Return early with an error response if no `data` member is present
   if (!req.body.hasOwnProperty('data')) {
@@ -133,14 +125,14 @@ export default function validateRequestBody(req: Request, res: Response, next: N
     errors.push(buildHasClientProvidedIdError());
 
     return res.status(403).json({
-      errors: errors
+      errors,
     });
   }
 
   // If any errors were encountered, return a 422 response
   if (errors.length) {
     return res.status(422).json({
-      errors: errors
+      errors,
     });
   }
 
