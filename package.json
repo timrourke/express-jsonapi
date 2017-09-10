@@ -24,7 +24,8 @@
       "src/**/*.ts"
     ],
     "exclude": [
-      "typings"
+      "typings",
+      "src/test/**/*.*"
     ],
     "extension": [
       ".ts"
