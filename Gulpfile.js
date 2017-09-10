@@ -9,7 +9,7 @@ const tsOptions = {
   module: "commonjs",
   target: "es6",
   sourceMap: true,
-  lib: ['es6'],
+  lib: ['es6']
 };
 
 function compileTypescript() {

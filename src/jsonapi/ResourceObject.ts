@@ -2,7 +2,7 @@
 
 import { Instance } from 'sequelize';
 import StringUtils from './../utils/String';
-import RelationshipLink, { RelationshipLinkConstructor } from './RelationshipLink';
+import RelationshipLink, { IRelationshipLinkConstructor } from './RelationshipLink';
 
 /**
  * Matches an attribute's key name for being a foreign key per Sequelize's

@@ -264,6 +264,16 @@ export default class GetListRequest {
   }
 
   /**
+   * Get the include object
+   *
+   * @method getInclude
+   * @return {Object}
+   */
+  public getInclude(): any {
+    return this.include;
+  }
+
+  /**
    * Validate the request
    *
    * @method validate

@@ -18,7 +18,7 @@ import JsonApiResourceObject from './../jsonapi/ResourceObject';
 import JsonApiResourceObjectLinks from './../jsonapi/ResourceObjectLinks';
 import parseurl = require('parseurl');
 import config from './../config/config';
-import Controller, { ControllerConstructor } from './../controllers/controller';
+import Controller, { IControllerConstructor } from './../controllers/controller';
 import tryHandlingCrudError from './../jsonapi/errors/tryHandlingCrudError';
 
 /**
@@ -63,7 +63,7 @@ export default class Route {
    *
    * @property {ControllerConstructor}
    */
-  private controllerClass: ControllerConstructor;
+  private controllerClass: IControllerConstructor;
 
   /**
    * Create a JSON API-compliant route
@@ -74,7 +74,7 @@ export default class Route {
    * @param {ControllerConstructor} controllerClass The controller class to map requests to
    * @return {void}
    */
-  constructor(app: Application, model: Model<any, any>, controllerClass: ControllerConstructor) {
+  constructor(app: Application, model: Model<any, any>, controllerClass: IControllerConstructor) {
     this.app = app;
     this.model = model;
     this.controllerClass = controllerClass;
