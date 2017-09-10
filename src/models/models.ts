@@ -4,7 +4,7 @@ import * as Sequelize from 'sequelize';
 const UserAttrs = require('./User'); // tslint:disable-line
 const PostAttrs = require('./Post'); // tslint:disable-line
 import inflection = require('inflection');
-const StringUtils = require('./../utils/String'); // tslint:disable-line
+import StringUtils from './../utils/String';
 
 // Add JSON API type lookup to Model prototype
 Sequelize.Model['prototype'].getType = function(): string { // tslint:disable-line

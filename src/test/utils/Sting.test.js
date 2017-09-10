@@ -2,7 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const should = chai.should();
-const Utils = require('./../../utils/String');
+import Utils from './../../utils/String';
 
 const dasherizedTestCases = [
   ['moneyMakingMonkeys', 'money-making-monkeys'],
