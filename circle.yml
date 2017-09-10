@@ -20,7 +20,7 @@ test:
         environment:
           NODE_ENV: test
           MOCHA_FILE: $CIRCLE_ARTIFACTS/test-results.xml
-    - node_modules/.bin/codeclimate-test-reporter < $CIRCLE_ARTIFACTS/test-results.xml
+    - node_modules/.bin/codeclimate-test-reporter < $CIRCLE_ARTIFACTS/test-results.xml:
         environment:
           CODECLIMATE_REPO_TOKEN: $CODECLIMATE_REPO_TOKEN
 
