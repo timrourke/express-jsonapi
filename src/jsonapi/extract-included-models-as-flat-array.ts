@@ -18,13 +18,13 @@ export default function extractIncludedModelsAsFlatArray(models: any, included: 
     models = [models];
   }
 
-  models.forEach(modelInstance => {
-    Object.keys(modelInstance.Model.associations).forEach(association => {
+  models.forEach((modelInstance) => {
+    Object.keys(modelInstance.Model.associations).forEach((association) => {
       if (modelInstance.hasOwnProperty(association)) {
-        let includedModels = modelInstance[association];
+        const includedModels = modelInstance[association];
 
         if (Array.isArray(includedModels)) {
-          includedModels.forEach(model => included.push(model));
+          includedModels.forEach((model) => included.push(model));
         } else {
           included.push(includedModels);
         }
