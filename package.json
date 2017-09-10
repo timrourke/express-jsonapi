@@ -48,7 +48,7 @@
     "inflection": "^1.12.0",
     "method-override": "^2.3.8",
     "mysql": "^2.13.0",
-    "node-mocks-http": "^1.6.4",
+    "node-mocks-http": "https://github.com/timrourke/node-mocks-http.git#feature-update-typedef-for-query",
     "parseurl": "^1.3.1",
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.7.0",
