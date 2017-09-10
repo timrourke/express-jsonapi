@@ -28,5 +28,9 @@ ratings:
   - "**.py"
   - "**.rb"
 exclude_paths:
+- converage/
 - dist/
 - node_modules/
+- sequelize/
+- src/db/migrations/
+- typings/
