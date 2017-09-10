@@ -2,7 +2,7 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
+import chai = require('chai');
 import ForbiddenError from './../../../jsonapi/errors/ForbiddenError';
 
 chai.should();
@@ -10,48 +10,51 @@ chai.should();
 describe('jsonapi/errors/ForbiddenError', () => {
   describe('#toJSON()', () => {
     it('should serialize to correct JSON without message', () => {
-      let actual = new ForbiddenError();
+      const actual = new ForbiddenError();
 
-      let expected = {
+      const expected = {
         status: 403,
         title: 'Forbidden',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should serialize to correct JSON with message', () => {
-      let actual = new ForbiddenError('Do not do that no');
+      const actual = new ForbiddenError('Do not do that no');
 
-      let expected = {
+      const expected = {
+        detail: 'Do not do that no',
         status: 403,
         title: 'Forbidden',
-        detail: 'Do not do that no',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should serialize to correct JSON with links and source', () => {
-      let actual = new ForbiddenError('ew gross no');
+      const actual = new ForbiddenError('ew gross no');
       actual.setPointer('spork');
       actual.links = {
-        about: 'yodletown'
+        about: 'yodletown',
       };
 
-      let expected = {
-        status: 403,
-        title: 'Forbidden',
+      const expected = {
         detail: 'ew gross no',
         links: {
-          about: 'yodletown'
+          about: 'yodletown',
         },
         source: {
-          pointer: 'spork'
-        }
+          pointer: 'spork',
+        },
+        status: 403,
+        title: 'Forbidden',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
   });
 });

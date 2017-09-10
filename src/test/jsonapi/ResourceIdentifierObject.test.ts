@@ -17,26 +17,27 @@ function ModelInstanceStub() {
 
   this.get = function(key) {
     return this[key];
-  }
+  };
 
   this.Model = {
-    getType: function() {
+    getType: () => {
       return 'mocked-model-instances';
-    }
+    },
   };
 }
 
 describe('jsonapi/ResourceIdentifierObject', () => {
   describe('#toJSON()', () => {
     it('should convert to JSON API-compliant JSON', () => {
-      let resourceIdentifierObject = new ResourceIdentifierObject(new ModelInstanceStub());
-      let actual = JSON.stringify(resourceIdentifierObject);
-      let expected = {
-        type: 'mocked-model-instances',
+      const resourceIdentifierObject = new ResourceIdentifierObject(new ModelInstanceStub());
+      const actual = JSON.stringify(resourceIdentifierObject);
+      const expected = {
         id: '784',
+        type: 'mocked-model-instances',
       };
 
-      actual.should.be.eql(JSON.stringify(expected));
+      JSON.parse(actual)
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
   });
 });

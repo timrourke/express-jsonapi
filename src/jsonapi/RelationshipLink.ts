@@ -2,44 +2,44 @@
 
 import config from './../config/config';
 
-interface LinksInterface {
+interface ILinksInterface {
   self: string;
   related: string;
-};
-
-export interface RelationshipLinkConstructor {
-  new (modelRoute: string, modelId: string, relationship: string): RelationshipLinkInterface;
 }
 
-interface RelationshipLinkInterface {
+export interface IRelationshipLinkConstructor {
+  new (modelRoute: string, modelId: string, relationship: string): IRelationshipLinkInterface;
+}
+
+interface IRelationshipLinkInterface {
   toJSON(): any;
 }
 
-export default class RelationshipLink implements RelationshipLinkInterface {
+export default class RelationshipLink implements IRelationshipLinkInterface {
 
   /**
    * Model route name for link
-   * 
+   *
    * @property modelRoute
    * @type {String}
    */
-  modelRoute: string;
+  private modelRoute: string;
 
   /**
    * Model ID for link
-   * 
+   *
    * @property modelId
    * @type {String}
    */
-  modelId: string;
+  private modelId: string;
 
   /**
    * Relationship name
-   * 
+   *
    * @property relationship
    * @type {String}
    */
-  relationship: string;
+  private relationship: string;
 
   /**
    * Constructor.
@@ -59,12 +59,12 @@ export default class RelationshipLink implements RelationshipLinkInterface {
    *
    * @return {Object}
    */
-  toJSON() {
-    let baseUrl = config.getApiBaseUrl();
+  public toJSON() {
+    const baseUrl = config.getApiBaseUrl();
 
-    let link: LinksInterface = {
+    const link: ILinksInterface = {
+      related: `${baseUrl}/${this.modelRoute}/${this.modelId}/${this.relationship}`,
       self: `${baseUrl}/${this.modelRoute}/${this.modelId}/relationships/${this.relationship}`,
-      related: `${baseUrl}/${this.modelRoute}/${this.modelId}/${this.relationship}`
     };
 
     return link;

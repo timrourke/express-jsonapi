@@ -2,16 +2,16 @@ import { Instance } from 'sequelize';
 
 /**
  * ResourceIdentifierObject is a JSON API Resource Identifier Object
- * 
+ *
  * @see http://jsonapi.org/format/#document-resource-identifier-objects
- * 
+ *
  * @class ResourceIdentifierObject
  */
 export default class ResourceIdentifierObject {
 
   /**
    * The Sequelize model instance for this Resource Identifier Object
-   * 
+   *
    * @property modelInstance
    * @type {Sequelize.Instance}
    * @private
@@ -33,13 +33,13 @@ export default class ResourceIdentifierObject {
    * @return {Object}
    */
   public toJSON(): any {
-    let model = this.modelInstance.Model;
+    const model = this.modelInstance.Model;
 
-    let id = String(this.modelInstance.get('id'));
+    const id = String(this.modelInstance.get('id'));
 
-    let json = {
+    const json = {
+      id,
       type: model.getType(),
-      id: id,
     };
 
     return json;
