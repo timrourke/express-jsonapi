@@ -1,21 +1,21 @@
 'use strict';
 
-export interface EnvConfig {
+export interface IEnvConfig {
   host: string;
   apiBase: string;
 }
 
 export default {
-  "development": {
-    "host": "http://localhost:3000",
-    "apiBase": "/api"
+  development: {
+    apiBase: '/api',
+    host: 'http://localhost:3000',
   },
-  "test": {
-    "host": "http://localhost:3000",
-    "apiBase": "/api"
+  production: {
+    apiBase: '/api',
+    host: 'http://localhost:3000',
   },
-  "production": {
-    "host": "http://localhost:3000",
-    "apiBase": "/api"
-  }
+  test: {
+    apiBase: '/api',
+    host: 'http://localhost:3000',
+  },
 };

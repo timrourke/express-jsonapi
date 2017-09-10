@@ -1,13 +1,31 @@
 'use strict';
 
-import env, { EnvConfig } from './env';
+import env, { IEnvConfig } from './env';
 
 class Config {
-  apiBaseUrl: string;
+  /**
+   * The base of the API's URL
+   *
+   * @property apiBaseUrl
+   * @type {String}
+   */
+  private apiBaseUrl: string;
 
-  baseUrl: string;
+  /**
+   * The base URL of the application
+   *
+   * @property baseUrl
+   * @type {String}
+   */
+  private baseUrl: string;
 
-  environment: EnvConfig;
+  /**
+   * The application config derived from the environment
+   *
+   * @property environment
+   * @type {IEnvConfig}
+   */
+  private environment: IEnvConfig;
 
   /**
    * Constructor.
@@ -24,7 +42,7 @@ class Config {
    *
    * @return {String}
    */
-  getBaseUrl(): string {
+  public getBaseUrl(): string {
     if (!this.hasOwnProperty('baseUrl')) {
       this.baseUrl = this.environment.host;
     }
@@ -37,9 +55,9 @@ class Config {
    *
    * @return {String}
    */
-  getApiBaseUrl(): string {
+  public getApiBaseUrl(): string {
     if (!this.hasOwnProperty('apiBaseUrl')) {
-      let apiBase = this.environment.apiBase;
+      const apiBase = this.environment.apiBase;
 
       this.apiBaseUrl = `${this.getBaseUrl()}${apiBase}`;
     }
