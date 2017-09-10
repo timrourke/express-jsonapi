@@ -7,7 +7,7 @@ import ResourceIdentifierObject from './../jsonapi/ResourceIdentifierObject';
 import JsonApiResourceObjectLinks from './../jsonapi/ResourceObjectLinks';
 import NotFoundError from './../jsonapi/errors/NotFoundError';
 import NotFoundHandler from './../jsonapi/middleware/not-found-handler';
-const GetListRequest = require('./../jsonapi/GetListRequest');
+import GetListRequest from './../jsonapi/GetListRequest';
 import extractIncludedModelsAsFlatArray from './../jsonapi/extract-included-models-as-flat-array';
 const parseurl = require('parseurl');
 import config from './../config/config';
@@ -305,7 +305,7 @@ export default class Route {
         return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
-      request.validate().then(sequelizeQueryParams => {
+      request.validate().then((sequelizeQueryParams: any) => {
 
         // Resource Identifier Objects only require ID and type attributes
         sequelizeQueryParams.attributes = ['id'];
