@@ -2,7 +2,7 @@ import BaseError from './BaseError';
 
 /**
  * BadRequest is useful for handling requests that should throw a 400.
- * 
+ *
  * @class BadRequest
  * @extends BaseError
  */
@@ -21,7 +21,7 @@ export default class BadRequest extends BaseError {
 
   /**
    * The error message
-   * 
+   *
    * @property message
    * @type {String}
    * @default 'Bad request.'
@@ -41,12 +41,12 @@ export default class BadRequest extends BaseError {
 
   /**
    * Constructor
-   * 
+   *
    * @param {String} message The message to use for the error's detail
    * @constructor
    */
-  constructor (message: string = 'Bad request.') {
-    super();    
+  constructor(message: string = 'Bad request.') {
+    super();
     this.message = message;
   }
 
@@ -60,7 +60,7 @@ export default class BadRequest extends BaseError {
    */
   public setSource(param: string): void {
     this.source = {
-      parameter: param
+      parameter: param,
     };
   }
 
@@ -73,10 +73,10 @@ export default class BadRequest extends BaseError {
    * @return {Object}
    */
   public toJSON() {
-    let ret: any = {
+    const ret: any = {
+      detail: this.message,
       status: 400,
       title: 'Bad Request',
-      detail: this.message
     };
 
     if (this.hasOwnProperty('links')) {
