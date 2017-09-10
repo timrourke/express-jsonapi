@@ -119,7 +119,7 @@ describe('jsonapi/GetListRequest', () => {
       toot.belongsTo(bar);
 
       const request = new GetListRequest(req, modelStub);
-      const actual = request.include;
+      const actual = request.getInclude();
       const expected = {
         bar: {
           toot: {},
