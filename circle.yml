@@ -16,9 +16,8 @@ test:
     - node_modules/.bin/sequelize db:migrate --config dist/config/database.json --migrations-path dist/db/migrations:
         environment:
           NODE_ENV: test
-    - npm test && node_modules/.bin/nyc report --reporter=text-lcov | node_modules/.bin/coveralls:
+    - npm test && node_modules/.bin/nyc report --reporter=text-lcov | tee >(node_modules/.bin/codeclimate-test-reporter) | node_modules/.bin/coveralls:
         environment:
           NODE_ENV: test
           MOCHA_FILE: $CIRCLE_ARTIFACTS/test-results.xml
-    - node_modules/.bin/codeclimate-test-reporter < $CIRCLE_ARTIFACTS/test-results.xml
 
