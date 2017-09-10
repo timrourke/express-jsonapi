@@ -1,24 +1,24 @@
 import BaseError from './BaseError';
 
-interface LinksAboutInterface {
+interface ILinksAboutInterface {
   about: string;
 }
 
-interface SourcePointerInterface {
+interface ISourcePointerInterface {
   pointer: string;
 }
 
-interface ForbiddenErrorJsonInterface {
+interface IForbiddenErrorJsonInterface {
   status: number;
   title: string;
   detail?: string;
-  links?: LinksAboutInterface;
-  source?: SourcePointerInterface;
+  links?: ILinksAboutInterface;
+  source?: ISourcePointerInterface;
 }
 
 /**
  * ForbiddenError is useful for handling requests that should throw a 403.
- * 
+ *
  * @class ForbiddenError
  * @extends BaseError
  */
@@ -30,13 +30,13 @@ export default class ForbiddenError extends BaseError {
    * @see http://jsonapi.org/format/#errors
    *
    * @property links
-   * @type {LinksAboutInterface}
+   * @type {ILinksAboutInterface}
    */
-  public links: LinksAboutInterface;
-  
+  public links: ILinksAboutInterface;
+
   /**
    * The error message
-   * 
+   *
    * @property message
    * @type {String}
    * @default 'This request is forbidden.'
@@ -49,18 +49,18 @@ export default class ForbiddenError extends BaseError {
    * @see http://jsonapi.org/format/#errors
    *
    * @property source
-   * @type {SourcePointerInterface}
+   * @type {ISourcePointerInterface}
    */
-  public source: SourcePointerInterface;
+  public source: ISourcePointerInterface;
 
   /**
    * Constructor
-   * 
+   *
    * @param {String} message The message to use for the error's detail
    * @constructor
    */
-  constructor (message: string = '') {
-    super();    
+  constructor(message: string = '') {
+    super();
     this.message = message;
   }
 
@@ -74,7 +74,7 @@ export default class ForbiddenError extends BaseError {
    */
   public setPointer(pointer: string): void {
     this.source = {
-      pointer: pointer
+      pointer,
     };
   }
 
@@ -84,10 +84,10 @@ export default class ForbiddenError extends BaseError {
    * @method toJSON
    * @return {Object}
    */
-  public toJSON(): ForbiddenErrorJsonInterface {
-    let ret: ForbiddenErrorJsonInterface = {
+  public toJSON(): IForbiddenErrorJsonInterface {
+    const ret: IForbiddenErrorJsonInterface = {
       status: 403,
-      title: 'Forbidden'
+      title: 'Forbidden',
     };
 
     if (this.hasOwnProperty('message') && this.message) {
