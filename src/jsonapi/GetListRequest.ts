@@ -232,7 +232,7 @@ export default class GetListRequest {
 
   /**
    * Sequelize query params to set query constraints
-   * 
+   *
    * @property sequelizeQueryParams
    * @type {Object}
    */
@@ -291,8 +291,8 @@ export default class GetListRequest {
    * @method validateIncludes
    * @return {BadRequest[]} Array of errors, if any
    */
-  private validateIncludes(): Array<BadRequest> {
-    let errors = [];
+  private validateIncludes(): BadRequest[] {
+    const errors = [];
 
     Object.assign(this.sequelizeQueryParams, { include: [] });
 
@@ -300,7 +300,7 @@ export default class GetListRequest {
       this.include,
       this.model,
       this.sequelizeQueryParams,
-      errors
+      errors,
     );
 
     return errors;
@@ -363,7 +363,7 @@ export default class GetListRequest {
     paramName: string,
     parsedValue: any,
     minimumString: string,
-    errors: Array<BadRequest>
+    errors: BadRequest[],
   ): void {
     if (isNaN(parsedValue)) {
       errors.push(buildPaginationErrIsNaN(paramName, this.pagination[paramName]));
@@ -455,7 +455,7 @@ export default class GetListRequest {
    * @method validatePagination
    * @return {BadRequest[]} Array of errors, if any
    */
-  private validatePagination(): Array<BadRequest> {
+  private validatePagination(): BadRequest[] {
     let offset = 0;
     let limit = 20;
     const errors: BadRequest[] = [];
@@ -496,11 +496,11 @@ export default class GetListRequest {
    * @method validateSorts
    * @return {BadRequest[]} Array of errors, if any
    */
-  private validateSorts(): Array<BadRequest> {
-    let errors = [];
-    let sorts = this.orders.map(sort => {
-      let [attrName, direction] = sort;
-      let columnName = StringUtils.convertDasherizedToCamelCase(attrName);
+  private validateSorts(): BadRequest[] {
+    const errors = [];
+    const sorts = this.orders.map((sort) => {
+      const [attrName, direction] = sort;
+      const columnName = StringUtils.convertDasherizedToCamelCase(attrName);
 
       // TODO: support sorting on fields that are not columns of the model
       if (this.model.attributes && !this.model.attributes.hasOwnProperty(columnName)) {
@@ -511,7 +511,7 @@ export default class GetListRequest {
     });
 
     Object.assign(this.sequelizeQueryParams, {
-      order: sorts
+      order: sorts,
     });
 
     return errors;
@@ -527,12 +527,12 @@ export default class GetListRequest {
  * @param {Object} includeStatement The Sequelize query object to pass to the query builder
  * @param {BadRequest[]} errors An array of BadRequest errors
  */
-function validateSingleInclude(parent, currentModel: Model<any, any>, includeStatement, errors: Array<BadRequest>): void {
+function validateSingleInclude(parent, currentModel: Model<any, any>, includeStatement, errors: BadRequest[]): void {
   // Iterate over each child of the parent branch of the include branch and try
   // to validate and build a query object for it
-  Object.keys(parent).forEach(child => {
+  Object.keys(parent).forEach((child) => {
     if (currentModel.hasOwnProperty('associations') && currentModel.associations.hasOwnProperty(child)) {
-      let includeObj: any = {};
+      const includeObj: any = {};
       includeObj.model = currentModel.associations[child].target;
       includeStatement.include = includeStatement.include || [];
       includeStatement.include.push(includeObj);
@@ -544,12 +544,12 @@ function validateSingleInclude(parent, currentModel: Model<any, any>, includeSta
           parent[child],
           includeObj.model,
           includeObj,
-          errors
+          errors,
         );
       }
     } else {
-      let msg = `The model "${currentModel.name}" has no relationship "${child}"`;
-      let error = new BadRequest(msg);
+      const msg = `The model "${currentModel.name}" has no relationship "${child}"`;
+      const error = new BadRequest(msg);
 
       error.setSource('include');
 
