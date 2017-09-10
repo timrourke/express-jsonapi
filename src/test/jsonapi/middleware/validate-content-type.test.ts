@@ -1,7 +1,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+import chaiHttp = require('chai-http');
 const server = require('./../../../server');
 
 chai.should();
@@ -18,13 +18,13 @@ describe('jsonapi middleware', () => {
 
           res.body.should.be.eql({
             errors: [{
-              "status": 415,
-              "title": "Unsupported Media Type",
-              "detail": "Media type parameters or modifications to JSON API Content-Type header not supported (\"application/vnd.api+json; version=2.3\")",
-              "links": {
-                "about": "http://jsonapi.org/format/#content-negotiation-clients"
-              }
-            }]
+              detail: 'Media type parameters or modifications to JSON API Content-Type header not supported ("application/vnd.api+json; version=2.3")',
+              links: {
+                about: 'http://jsonapi.org/format/#content-negotiation-clients',
+              },
+              status: 415,
+              title: 'Unsupported Media Type',
+            }],
           });
 
           done();
@@ -39,13 +39,13 @@ describe('jsonapi middleware', () => {
 
           res.body.should.be.eql({
             errors: [{
-              status: 400,
-              title: 'Bad Request',
               detail: 'Unsupported value for Content-Type header ("")',
               links: {
-                about: 'http://jsonapi.org/format/#content-negotiation-clients'
-              }
-            }]
+                about: 'http://jsonapi.org/format/#content-negotiation-clients',
+              },
+              status: 400,
+              title: 'Bad Request',
+            }],
           });
 
           done();
@@ -61,13 +61,13 @@ describe('jsonapi middleware', () => {
 
           res.body.should.be.eql({
             errors: [{
-              "status": 400,
-              "title": "Bad Request",
-              "detail": "Unsupported value for Content-Type header (\"application/json\")",
-              "links": {
-                "about": "http://jsonapi.org/format/#content-negotiation-clients"
-              }
-            }]
+              detail: 'Unsupported value for Content-Type header ("application/json")',
+              links: {
+                about: 'http://jsonapi.org/format/#content-negotiation-clients',
+              },
+              status: 400,
+              title: 'Bad Request',
+            }],
           });
 
           done();

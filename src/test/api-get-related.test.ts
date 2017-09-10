@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+import chaiHttp = require('chai-http');
 import Factory from './../factories/all';
 const server = require('../server');
 
@@ -12,14 +12,14 @@ chai.use(chaiHttp);
 
 const models = server.models;
 
-Object.keys(models).forEach(modelName => {
-  let model = models[modelName];
+Object.keys(models).forEach((modelName) => {
+  const model = models[modelName];
 
   describe(`API - generic test for getting objects related to model ${model.getType()}`, () => {
     afterEach((done) => {
       Promise.all([
         server.db.query('TRUNCATE users'),
-        server.db.query('TRUNCATE posts')
+        server.db.query('TRUNCATE posts'),
       ]).then(() => done());
     });
 
@@ -34,14 +34,14 @@ Object.keys(models).forEach(modelName => {
         });
     });
 
-    Object.keys(model.associations).forEach(associationName => {
+    Object.keys(model.associations).forEach((associationName) => {
 
       describe(`GET /api/${model.getType()}/:id/${associationName}`, () => {
         it('should fetch the correct related objects', (done) => {
-          let parentModelDef = Factory.build(modelName, {id: 1});
+          const parentModelDef = Factory.build(modelName, {id: 1});
 
-          model.create(parentModelDef).then(parentModelInstance => {
-            let assocUnderTest = model.associations[associationName];
+          model.create(parentModelDef).then((parentModelInstance) => {
+            const assocUnderTest = model.associations[associationName];
 
             if (assocUnderTest.isMultiAssociation) {
 
@@ -51,8 +51,8 @@ Object.keys(models).forEach(modelName => {
                 model,
                 modelName,
                 assocUnderTest,
-                parentModelInstance
-              ).then(() => done()).catch(err => {
+                parentModelInstance,
+              ).then(() => done()).catch((err) => {
                 throw err;
               });
 
@@ -64,8 +64,8 @@ Object.keys(models).forEach(modelName => {
                 model,
                 modelName,
                 assocUnderTest,
-                parentModelInstance
-              ).then(() => done()).catch(err => {
+                parentModelInstance,
+              ).then(() => done()).catch((err) => {
                 throw err;
               });
 
@@ -94,14 +94,14 @@ function testGettingRelatedObjectsSingle(
   model,
   modelName,
   assocUnderTest,
-  parentModelInstance
+  parentModelInstance,
 ) {
   return new Promise((resolve) => {
-    let assocModel = assocUnderTest.target;
-    let assocModelName = assocModel.name;
-    let assocModelDef = Factory.build(assocModelName);
+    const assocModel = assocUnderTest.target;
+    const assocModelName = assocModel.name;
+    const assocModelDef = Factory.build(assocModelName);
 
-    assocModel.create(assocModelDef).then(inst => {
+    assocModel.create(assocModelDef).then((inst) => {
       parentModelInstance[assocUnderTest.accessors.set](inst).then(() => {
         chai.request(server.app)
           .get(`/api/${model.getType()}/1/${associationName}`)
@@ -134,16 +134,16 @@ function testGettingRelatedObjectsMany(
   model,
   modelName,
   assocUnderTest,
-  parentModelInstance
+  parentModelInstance,
 ) {
   return new Promise((resolve, reject) => {
-    let assocModel = assocUnderTest.target;
-    let assocModelName = assocModel.name;
-    let assocModelDefs = Factory.buildList(assocModelName, 3);
-    let promises = assocModelDefs.map(def => assocModel.create(def));
+    const assocModel = assocUnderTest.target;
+    const assocModelName = assocModel.name;
+    const assocModelDefs = Factory.buildList(assocModelName, 3);
+    const promises = assocModelDefs.map((def) => assocModel.create(def));
 
-    Promise.all(promises).then(assocModelInstances => {
-      let relateToParentPromises = assocModelInstances.map(inst => {
+    Promise.all(promises).then((assocModelInstances) => {
+      const relateToParentPromises = assocModelInstances.map((inst) => {
         return parentModelInstance[assocUnderTest.accessors.add](inst);
       });
 
@@ -154,17 +154,17 @@ function testGettingRelatedObjectsMany(
           .end((err, res) => {
             res.should.have.status(200);
             res.body.data.length.should.be.eql(3);
-            res.body.data.forEach(resourceObject => {
+            res.body.data.forEach((resourceObject) => {
               resourceObject.type.should.be.eql(assocModel.getType());
             });
 
             resolve();
           });
-      }).catch(err => {
+      }).catch((err) => {
         console.error(err);
         reject(err);
       });
-    }).catch(err => {
+    }).catch((err) => {
       console.error(err);
       reject(err);
     });

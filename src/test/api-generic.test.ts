@@ -7,17 +7,17 @@ import chaiHttp = require('chai-http');
 const server = require('../server');
 import inflection = require('inflection');
 import sinon = require('sinon');
-import StringUtils from './../utils/String';
 import Factory from './../factories/all';
+import StringUtils from './../utils/String';
 
 chai.should();
 chai.use(chaiHttp);
 
 const models = server.models;
 
-Object.keys(models).forEach(modelName => {
-  let model = models[modelName];
-  let modelType = model.getType();
+Object.keys(models).forEach((modelName) => {
+  const model = models[modelName];
+  const modelType = model.getType();
 
   describe(`API - generic test for model ${modelType}`, () => {
     let fakeClock = null;
@@ -27,7 +27,7 @@ Object.keys(models).forEach(modelName => {
 
       Promise.all([
         server.db.query('TRUNCATE users'),
-        server.db.query('TRUNCATE posts')
+        server.db.query('TRUNCATE posts'),
       ]).then(() => done());
     });
 
@@ -49,7 +49,7 @@ Object.keys(models).forEach(modelName => {
       });
 
       it(`should return an array of ${modelType}`, (done) => {
-        let modelDefinitions = Factory.buildList(modelName, 2);
+        const modelDefinitions = Factory.buildList(modelName, 2);
 
         modelDefinitions.forEach((def, index) => {
           def.id = index + 1;
@@ -80,10 +80,10 @@ Object.keys(models).forEach(modelName => {
             res.body.should.be.eql({
               data: null,
               errors: [{
+                detail: `No ${modelType} found with the id of 1`,
                 status: 404,
                 title: 'Not Found',
-                detail: `No ${modelType} found with the id of 1`
-              }]
+              }],
             });
 
             done();
@@ -91,7 +91,7 @@ Object.keys(models).forEach(modelName => {
       });
 
       it(`should retrieve ${modelName} by id`, (done) => {
-        let modelDefinition = Factory.build(modelName);
+        const modelDefinition = Factory.build(modelName);
 
         model.create(modelDefinition);
 
@@ -128,7 +128,7 @@ Object.keys(models).forEach(modelName => {
           .post(`/api/${modelType}`)
           .set('Content-Type', 'application/vnd.api+json')
           .send({
-            data: {}
+            data: {},
           })
           .end((err, res) => {
             res.should.have.status(422);
@@ -144,9 +144,9 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .send({
             data: {
+              id: 583,
               type: modelType,
-              id: 583
-            }
+            },
           })
           .end((err, res) => {
             res.should.have.status(403);
@@ -157,11 +157,11 @@ Object.keys(models).forEach(modelName => {
       });
 
       it(`should create ${modelName}`, (done) => {
-        let modelDefinition = Factory.build(modelName);
+        const modelDefinition = Factory.build(modelName);
         modelDefinition.id = 1;
-        let attrs = {};
+        const attrs = {};
 
-        Object.keys(modelDefinition).forEach(key => {
+        Object.keys(modelDefinition).forEach((key) => {
           if (key !== 'id') {
             attrs[key] = modelDefinition[key];
           }
@@ -172,9 +172,9 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .send({
             data: {
+              attributes: attrs,
               type: modelType,
-              attributes: attrs
-            }
+            },
           })
           .end((err, res) => {
             res.should.have.status(201);
@@ -187,14 +187,14 @@ Object.keys(models).forEach(modelName => {
     });
 
     describe(`PATCH /api/${modelType}`, () => {
-      let modelDefinition = Factory.build(modelName);
+      const modelDefinition = Factory.build(modelName);
       modelDefinition.id = 1;
 
-      let modelDefinition2 = Factory.build(modelName);
+      const modelDefinition2 = Factory.build(modelName);
       modelDefinition2.id = 1;
-      let attrs2 = {};
+      const attrs2 = {};
 
-      Object.keys(modelDefinition2).forEach(key => {
+      Object.keys(modelDefinition2).forEach((key) => {
         if (['id', 'createdAt', 'updatedAt'].indexOf(key) === -1) {
           attrs2[key] = modelDefinition2[key];
         }
@@ -219,8 +219,8 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .send({
             data: {
-              id: 1
-            }
+              id: 1,
+            },
           })
           .end((err, res) => {
             res.should.have.status(422);
@@ -236,8 +236,8 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .send({
             data: {
-              type: modelType
-            }
+              type: modelType,
+            },
           })
           .end((err, res) => {
             res.should.have.status(422);
@@ -252,7 +252,7 @@ Object.keys(models).forEach(modelName => {
           .patch(`/api/${modelType}/1`)
           .set('Content-Type', 'application/vnd.api+json')
           .send({
-            data: {}
+            data: {},
           })
           .end((err, res) => {
             res.should.have.status(422);
@@ -268,20 +268,20 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .send({
             data: {
-              type: modelType,
+              attributes: attrs2,
               id: 1,
-              attributes: attrs2
-            }
+              type: modelType,
+            },
           })
           .end((err, res) => {
             res.should.have.status(404);
             res.body.should.be.eql({
               data: null,
               errors: [{
+                detail: `No ${modelType} found with the id of 1`,
                 status: 404,
                 title: 'Not Found',
-                detail: `No ${modelType} found with the id of 1`
-              }]
+              }],
             });
 
             done();
@@ -296,17 +296,17 @@ Object.keys(models).forEach(modelName => {
           .set('Content-Type', 'application/vnd.api+json')
           .send({
             data: {
-              type: modelType,
+              attributes: attrs2,
               id: 1,
-              attributes: attrs2
-            }
+              type: modelType,
+            },
           })
           .end((err, res) => {
-            let actualAttrs = res.body.data.attributes;
-            let expectedAttrs = {};
+            const actualAttrs = res.body.data.attributes;
+            const expectedAttrs = {};
 
-            Object.keys(attrs2).forEach(key => {
-              let dasherized = StringUtils.convertCamelToDasherized(key);
+            Object.keys(attrs2).forEach((key) => {
+              const dasherized = StringUtils.convertCamelToDasherized(key);
 
               expectedAttrs[dasherized] = attrs2[key];
             });
@@ -314,7 +314,7 @@ Object.keys(models).forEach(modelName => {
             res.should.have.status(200);
             res.body.data.type.should.be.eql(modelType);
 
-            Object.keys(expectedAttrs).forEach(expectedKey => {
+            Object.keys(expectedAttrs).forEach((expectedKey) => {
               actualAttrs[expectedKey].should.be.eql(expectedAttrs[expectedKey]);
             });
 
@@ -333,10 +333,10 @@ Object.keys(models).forEach(modelName => {
             res.body.should.be.eql({
               data: null,
               errors: [{
+                detail: `No ${modelType} found with the id of 1`,
                 status: 404,
                 title: 'Not Found',
-                detail: `No ${modelType} found with the id of 1`
-              }]
+              }],
             });
 
             done();
@@ -344,7 +344,7 @@ Object.keys(models).forEach(modelName => {
       });
 
       it(`should delete ${modelName}`, (done) => {
-        let modelDefinition = Factory.build(modelName);
+        const modelDefinition = Factory.build(modelName);
         modelDefinition.id = 1;
         model.create(modelDefinition);
 
@@ -355,21 +355,21 @@ Object.keys(models).forEach(modelName => {
             res.should.have.status(204);
             res.body.should.be.eql({});
 
-          chai.request(server.app)
-            .get(`/api/${modelType}/${modelDefinition.id}`)
-            .set('Content-Type', 'application/vnd.api+json')
-            .end((err, res) => {
-              res.should.have.status(404);
-              res.body.should.be.eql({
-                data: null,
-                errors: [{
-                  status: 404,
-                  title: 'Not Found',
-                  detail: `No ${modelType} found with the id of 1`
-                }]
-              });
+            chai.request(server.app)
+              .get(`/api/${modelType}/${modelDefinition.id}`)
+              .set('Content-Type', 'application/vnd.api+json')
+              .end((err2, res2) => {
+                res2.should.have.status(404);
+                res2.body.should.be.eql({
+                  data: null,
+                  errors: [{
+                    detail: `No ${modelType} found with the id of 1`,
+                    status: 404,
+                    title: 'Not Found',
+                  }],
+                });
 
-              done();
+                done();
             });
           });
       });

@@ -9,74 +9,74 @@ chai.should();
 
 const arrayOfModelsStub = [
   {
-    id: 1,
+    Model: {
+      associations: {
+        bar: {},
+        foos: {},
+      },
+    },
     foos: [
       {
-        id: 2,
+        Model: {
+          associations: {
+            bar: {},
+            foos: {},
+          },
+        },
         bar: {
-          id: 5,
           Model: {
             associations: {},
           },
+          id: 5,
         },
         foos: [
           {
-            id: 7,
-            baz: {
-              id: 8,
-              Model: {
-                associations: {},
-              },
-            },
             Model: {
               associations: {
                 baz: {},
               },
             },
-          }
+            baz: {
+              Model: {
+                associations: {},
+              },
+              id: 8,
+            },
+            id: 7,
+          },
         ],
-        Model: {
-          associations: {
-            foos: {},
-            bar: {}
-          }
-        }
-      }
+        id: 2,
+      },
     ],
-    Model: {
-      associations: {
-        foos: {},
-        bar: {}
-      }
-    }
+    id: 1,
   },
   {
-    id: 3,
+    Model: {
+      associations: {
+        bar: {},
+      },
+    },
     bar: {
-      id: 4,
       Model: {
         associations: {
 
-        }
-      }
+        },
+      },
+      id: 4,
     },
-    Model: {
-      associations: {
-        bar: {}
-      }
-    }
-  }
+    id: 3,
+  },
 ];
 
 describe('jsonapi/extract-included-models-as-flat-array', () => {
   it('should extract included models from an array of models', () => {
-    let flatArray = [];
+    const flatArray = [];
 
     extractIncludedModelsAsFlatArray(arrayOfModelsStub, flatArray);
 
-    let actual = flatArray.map(o => o.id).sort();
+    const actual = flatArray.map((o) => o.id).sort();
 
     actual.length.should.be.eql(5);
-    actual.should.be.eql([2,4,5,7,8]);
+    actual.should.be.eql([2, 4, 5, 7, 8]);
   });
 });

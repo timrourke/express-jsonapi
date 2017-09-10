@@ -1,7 +1,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+import chaiHttp = require('chai-http');
 const server = require('./../../../server');
 
 chai.should();
@@ -15,9 +15,9 @@ describe(`JSON API middleware - not found handler`, () => {
       .end((err, res) => {
         res.should.have.status(404);
         res.body.errors[0].should.be.eql({
+          detail: 'Nothing found at http://localhost:3000/this/does/not/exist',
           status: 404,
           title: 'Not Found',
-          detail: 'Nothing found at http://localhost:3000/this/does/not/exist'
         });
 
         done();

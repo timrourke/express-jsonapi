@@ -13,19 +13,19 @@ const models = defineModels(db);
 
 import Application from './Application';
 
-let modelDefs = [];
+const modelDefs = [];
 
-Object.keys(models).forEach(key => modelDefs.push(models[key]));
+Object.keys(models).forEach((key) => modelDefs.push(models[key]));
 
 const myApp = new Application(express(), db, modelDefs);
 
 myApp.configureMiddlewares([
   helmet(),
   bodyParser.urlencoded({
-    extended: true
+    extended: true,
   }),
   bodyParser.json({
-    type: 'application/vnd.api+json'
+    type: 'application/vnd.api+json',
   }),
   methodOverride(),
   compression(),
@@ -36,9 +36,9 @@ myApp.serve(3000);
 // Export the application instance for testing
 module.exports = {
   app: myApp.getExpressApp(),
-  db: db,
+  db,
   models: {
+    post: models.Post,
     user: models.User,
-    post: models.Post
-  }
+  },
 };
