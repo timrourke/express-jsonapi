@@ -3,11 +3,11 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/timrourke/jsonapi/badge.svg?branch=master)](https://coveralls.io/github/timrourke/jsonapi?branch=master)
 
-[![Code Climate](https://codeclimate.com/github/codeclimate/codeclimate/badges/gpa.svg)](https://codeclimate.com/github/timrourke/jsonapi)
+[![Code Climate](https://codeclimate.com/github/timrourke/jsonapi/badges/gpa.svg)](https://codeclimate.com/github/timrourke/jsonapi)
 
-[![Test Coverage](https://codeclimate.com/github/codeclimate/codeclimate/badges/coverage.svg)](https://codeclimate.com/github/timrourke/jsonapi/coverage)
+[![Test Coverage](https://codeclimate.com/github/timrourke/jsonapi/badges/coverage.svg)](https://codeclimate.com/github/timrourke/jsonapi/coverage)
 
-[![Issue Count](https://codeclimate.com/github/codeclimate/codeclimate/badges/issue_count.svg)](https://codeclimate.com/github/timrourke/jsonapi)
+[![Issue Count](https://codeclimate.com/github/timrourke/jsonapi/badges/issue_count.svg)](https://codeclimate.com/github/timrourke/jsonapi)
 
 The goal of this project is to build an extensible, well-tested framework for creating JSON API servers using [ExpressJS](https://github.com/expressjs/express) and [Sequelize](https://github.com/sequelize/sequelize).
 
