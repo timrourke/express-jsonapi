@@ -2,7 +2,7 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
+import chai = require('chai');
 import BadRequest from './../../../jsonapi/errors/BadRequest';
 
 chai.should();
@@ -10,33 +10,34 @@ chai.should();
 describe('jsonapi/errors/BadRequest', () => {
   describe('#toJSON()', () => {
     it('should serialize to correct JSON', () => {
-      let actual = new BadRequest('My hat is too big');
+      const actual = new BadRequest('My hat is too big');
 
-      let expected = {
+      const expected = {
+        detail: 'My hat is too big',
         status: 400,
         title: 'Bad Request',
-        detail: 'My hat is too big',
       };
 
       JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
     });
 
     it('should serialize to correct JSON with links and source', () => {
-      let actual = new BadRequest('A taco error has occurred.');
+      const actual = new BadRequest('A taco error has occurred.');
       actual.setSource('tacos');
       actual.links = 'blah';
 
-      let expected = {
-        status: 400,
-        title: 'Bad Request',
+      const expected = {
         detail: 'A taco error has occurred.',
         links: 'blah',
         source: {
-          parameter: 'tacos'
-        }
+          parameter: 'tacos',
+        },
+        status: 400,
+        title: 'Bad Request',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
   });
 });

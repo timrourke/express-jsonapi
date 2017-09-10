@@ -2,7 +2,7 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
+import chai = require('chai');
 import UnprocessableEntity from './../../../jsonapi/errors/UnprocessableEntity';
 
 chai.should();
@@ -10,51 +10,54 @@ chai.should();
 describe('jsonapi/errors/UnprocessableEntity', () => {
   describe('#toJSON()', () => {
     it('should serialize to correct JSON', () => {
-      let actual = new UnprocessableEntity('I just can\'t even');
+      const actual = new UnprocessableEntity('I just can\'t even');
 
-      let expected = {
+      const expected = {
+        detail: 'I just can\'t even',
         status: 422,
         title: 'Unprocessable Entity',
-        detail: 'I just can\'t even',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should serialize to correct JSON with links and source', () => {
-      let actual = new UnprocessableEntity('Hooowhee that thing is BROKE');
+      const actual = new UnprocessableEntity('Hooowhee that thing is BROKE');
       actual.setPointer('/things/other-things/this-one');
       actual.links = {
-        about: 'linkz r kewl'
+        about: 'linkz r kewl',
       };
 
-      let expected = {
-        status: 422,
-        title: 'Unprocessable Entity',
+      const expected = {
         detail: 'Hooowhee that thing is BROKE',
         links: {
-          about: 'linkz r kewl'
+          about: 'linkz r kewl',
         },
         source: {
-          pointer: '/things/other-things/this-one'
-        }
+          pointer: '/things/other-things/this-one',
+        },
+        status: 422,
+        title: 'Unprocessable Entity',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should serialize with title if provided', () => {
-      let actual = new UnprocessableEntity('The thing is incorrect');
+      const actual = new UnprocessableEntity('The thing is incorrect');
 
       actual.setTitle('new title here');
 
-      let expected = {
+      const expected = {
+        detail: 'The thing is incorrect',
         status: 422,
         title: 'new title here',
-        detail: 'The thing is incorrect',
       };
 
-      JSON.stringify(actual).should.be.eql(JSON.stringify(expected));
+      JSON.parse(JSON.stringify(actual))
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
   });
 });

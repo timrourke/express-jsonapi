@@ -1,24 +1,24 @@
 import BaseError from './BaseError';
 
-interface LinksAboutInterface {
+interface ILinksAboutInterface {
   about: string;
 }
 
-interface SourcePointerInterface {
+interface ISourcePointerInterface {
   pointer: string;
 }
 
-interface ErrorObjectJsonInterface {
+interface IErrorObjectJsonInterface {
   status: number;
   title: string;
   detail?: string;
-  links?: LinksAboutInterface;
-  source?: SourcePointerInterface;
+  links?: ILinksAboutInterface;
+  source?: ISourcePointerInterface;
 }
 
 /**
  * UnprocessableEntity is useful for handling requests that should throw a 422.
- * 
+ *
  * @class UnprocessableEntity
  * @extends BaseError
  */
@@ -30,27 +30,27 @@ export default class UnprocessableEntity extends BaseError {
    * @see http://jsonapi.org/format/#errors
    *
    * @property links
-   * @type {LinksAboutInterface}
+   * @type {ILinksAboutInterface}
    */
-  public links: LinksAboutInterface;
+  public links: ILinksAboutInterface;
 
   /**
    * The error message
-   * 
+   *
    * @property message
    * @type {String}
    */
-  public message: string = "Unprocessable entity";
-  
+  public message: string = 'Unprocessable entity';
+
   /**
    * JSON API `source` member identifying field that triggered this error
    *
    * @see http://jsonapi.org/format/#errors
    *
    * @property source
-   * @type {SourcePointerInterface}
+   * @type {ISourcePointerInterface}
    */
-  public source: SourcePointerInterface;
+  public source: ISourcePointerInterface;
 
   /**
    * JSON API `title` member of the error object
@@ -64,12 +64,12 @@ export default class UnprocessableEntity extends BaseError {
 
   /**
    * Constructor
-   * 
+   *
    * @param {String} message The message to use for the error's detail
    * @constructor
    */
-  constructor (message: string = 'Unprocessable Entity') {
-    super();    
+  constructor(message: string = 'Unprocessable Entity') {
+    super();
     this.message = message;
   }
 
@@ -83,7 +83,7 @@ export default class UnprocessableEntity extends BaseError {
    */
   public setPointer(pointer: string) {
     this.source = {
-      pointer: pointer
+      pointer,
     };
   }
 
@@ -104,10 +104,10 @@ export default class UnprocessableEntity extends BaseError {
    * @return {Object}
    */
   public toJSON() {
-    let ret: ErrorObjectJsonInterface = {
+    const ret: IErrorObjectJsonInterface = {
+      detail: this.message,
       status: 422,
       title: this.title || 'Unprocessable Entity',
-      detail: this.message
     };
 
     if (this.hasOwnProperty('links')) {

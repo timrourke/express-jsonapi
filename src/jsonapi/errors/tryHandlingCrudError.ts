@@ -2,9 +2,10 @@
 
 import { Error as SequelizeError, Model, ValidationError } from 'sequelize';
 import UnprocessableEntity from './UnprocessableEntity';
-const StringUtils = require('./../../utils/String');
-const titleize = require('inflection').titleize;
-const underscore = require('inflection').underscore;
+const StringUtils = require('./../../utils/String'); // tslint:disable-line
+import inflection = require('inflection');
+const titleize = inflection.titleize;
+const underscore = inflection.underscore;
 
 /**
  * Build an error object for a validation error.
@@ -14,15 +15,15 @@ const underscore = require('inflection').underscore;
  * @return {UnprocessableEntity}
  */
 function buildValidationError(sequelizeErrorItem, modelName: string): UnprocessableEntity {
-  let modelTitle = titleize(underscore(modelName));
-  let attr = StringUtils.convertCamelToDasherized(
-    sequelizeErrorItem.path
+  const modelTitle = titleize(underscore(modelName));
+  const attr = StringUtils.convertCamelToDasherized(
+    sequelizeErrorItem.path,
   );
   let msg = '';
 
   switch (sequelizeErrorItem.type) {
     case 'unique violation':
-      msg = `${modelTitle}'s ${attr.replace(/-/g, ' ')} must be unique. "${sequelizeErrorItem.value}" was already chosen.`;
+      msg = `${modelTitle}'s ${attr.replace(/-/g, ' ')} must be unique. "${sequelizeErrorItem.value}" was already chosen.`; // tslint:disable-line
       break;
     case 'notNull Violation':
       msg = `${modelTitle}'s ${attr.replace(/-/g, ' ')} is required.`;
@@ -32,7 +33,7 @@ function buildValidationError(sequelizeErrorItem, modelName: string): Unprocessa
       break;
   }
 
-  let error = new UnprocessableEntity(msg);
+  const error = new UnprocessableEntity(msg);
 
   error.setPointer(`/data/attributes/${attr}`);
   error.setTitle('Invalid Attribute');
@@ -54,16 +55,16 @@ export default function tryHandlingCrudError(err: any, model: Model<any, any>) {
     }
 
     if (err instanceof ValidationError) {
-      let validationError = <ValidationError> err;
-      let errors = validationError.errors.map(sequelizeErrorItem => {
+      const validationError = err as ValidationError;
+      const errors = validationError.errors.map((sequelizeErrorItem) => {
         return buildValidationError(sequelizeErrorItem, model.name);
       });
 
       return resolve({
-        status: 422,
         json: {
-          errors: errors
-        }
+          errors,
+        },
+        status: 422,
       });
     }
 
