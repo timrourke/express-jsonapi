@@ -188,7 +188,7 @@ function buildPaginationErrOffsetLessThanMin(pageParam: string, invalidValue: an
  *
  * @class GetListRequest
  */
-class GetListRequest {
+export default class GetListRequest {
 
   /**
    * Array of errors, if any.
@@ -533,7 +533,7 @@ function validateSingleInclude(parent, currentModel: Model<any, any>, includeSta
   // Iterate over each child of the parent branch of the include branch and try
   // to validate and build a query object for it
   Object.keys(parent).forEach(child => {
-    if (currentModel.associations.hasOwnProperty(child)) {
+    if (currentModel.hasOwnProperty('associations') && currentModel.associations.hasOwnProperty(child)) {
       let includeObj: any = {};
       includeObj.model = currentModel.associations[child].target;
       includeStatement.include = includeStatement.include || [];
@@ -559,5 +559,3 @@ function validateSingleInclude(parent, currentModel: Model<any, any>, includeSta
     }
   });
 }
-
-module.exports = GetListRequest;
