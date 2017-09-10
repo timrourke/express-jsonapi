@@ -2,11 +2,11 @@
 
 import { Instance, Model } from 'sequelize';
 
-export interface ControllerConstructor {
-  new (model: Model<any, any>): ControllerInterface;
+export interface IControllerConstructor {
+  new (model: Model<any, any>): IControllerInterface;
 }
 
-interface ControllerInterface {
+interface IControllerInterface {
   getOne(id): Promise<Instance<any, any>>;
 
   getList(sequelizeQueryParams): Promise<{ rows: Array<Instance<any, any>>, count: number }>;
@@ -18,15 +18,15 @@ interface ControllerInterface {
   deleteOne(id): Promise<Instance<any, any>>;
 }
 
-export default class Controller implements ControllerInterface {
+export default class Controller implements IControllerInterface {
 
   /**
    * The primary model for the controller
-   * 
+   *
    * @property model
    * @type {Sequelize.Model<any, any>}
    */
-  model: Model<any, any>;
+  private model: Model<any, any>;
 
   /**
    * Constructor.
@@ -43,8 +43,8 @@ export default class Controller implements ControllerInterface {
    * @param {String|Number} id Primary ID of the model
    * @return {Promise}
    */
-  getOne(id): Promise<Instance<any, any>> {
-    return new Promise((resolve: Function, reject: Function) => {
+  public getOne(id): Promise<Instance<any, any>> {
+    return new Promise((resolve: (foundModel: Instance<any, any>) => void, reject: (error: Error) => void) => {
       this.model.findById(id).then((foundModel: Instance<any, any>) => {
         resolve(foundModel);
       }).catch((error: Error) => {
@@ -59,9 +59,9 @@ export default class Controller implements ControllerInterface {
    * @param {Object} sequelizeQueryParams The query params to pass to the query builder
    * @return {Promise}
    */
-  getList(sequelizeQueryParams = {}): Promise<{ rows: any[], count: number }> {
-    return new Promise((resolve: Function, reject: Function) => {
-      this.model.findAndCountAll(sequelizeQueryParams).then(result => {
+  public getList(sequelizeQueryParams = {}): Promise<{ rows: any[], count: number }> {
+    return new Promise((resolve: (result) => void, reject: (error: Error) => void) => {
+      this.model.findAndCountAll(sequelizeQueryParams).then((result) => {
         resolve(result);
       }).catch((error: Error) => {
         reject(error);
@@ -75,8 +75,8 @@ export default class Controller implements ControllerInterface {
    * @param {Object} attrs Attributes to create the model with
    * @return {Promise}
    */
-  createOne(attrs: any): Promise<Instance<any, any>> {
-    return new Promise((resolve: Function, reject: Function) => {
+  public createOne(attrs: any): Promise<Instance<any, any>> {
+    return new Promise((resolve: (newModel: Instance<any, any>) => void, reject: (error: Error) => void) => {
       this.model.create(attrs).then((newModel: Instance<any, any>) => {
         resolve(newModel);
       }).catch((error: Error) => {
@@ -93,8 +93,8 @@ export default class Controller implements ControllerInterface {
    * @param {Object} attrs Attributes to update on the model
    * @return {Promise}
    */
-  updateOne(id, attrs: any): Promise<Instance<any, any>> {
-    return new Promise((resolve: Function, reject: Function) => {
+  public updateOne(id, attrs: any): Promise<Instance<any, any>> {
+    return new Promise((resolve: (updatedModel: Instance<any, any>) => void, reject: (error: Error) => void) => {
       this.model.findById(id).then((foundModel: Instance<any, any>) => {
         if (!foundModel) {
           return resolve(null);
@@ -105,8 +105,8 @@ export default class Controller implements ControllerInterface {
         }).catch((error: Error) => {
           reject(error);
         });
-      }).catch(function() {
-        reject(arguments);
+      }).catch((error) => {
+        reject(error);
       });
     });
   }
@@ -118,8 +118,8 @@ export default class Controller implements ControllerInterface {
    * @param {String|Number} id Primary ID of the model
    * @return {Promise}
    */
-  deleteOne(id): Promise<Instance<any, any>> {
-    return new Promise((resolve: Function, reject: Function) => {
+  public deleteOne(id): Promise<Instance<any, any>> {
+    return new Promise((resolve: (deletedModel: Instance<any, any>) => void, reject: (error: Error) => void) => {
       this.model.findById(id).then((foundModel: Instance<any, any>) => {
         if (!foundModel) {
           return resolve(null);
