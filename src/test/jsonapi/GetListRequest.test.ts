@@ -4,8 +4,8 @@ process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
 import GetListRequest from './../../jsonapi/GetListRequest';
-const httpMocks = require('node-mocks-http');
-const SequelizeMock = require('sequelize-mock');
+import httpMocks = require('node-mocks-http');
+import SequelizeMock = require('sequelize-mock');
 const dbMock = new SequelizeMock();
 
 chai.should();
@@ -13,16 +13,16 @@ chai.should();
 describe('jsonapi/GetListRequest', () => {
   describe('#constructor()', () => {
     it('should parse request without params', (done) => {
-      let modelStub = dbMock.define('stub', {});
+      const modelStub = dbMock.define('stub', {});
 
-      let request = new GetListRequest(httpMocks.createRequest({}), modelStub);
+      const request = new GetListRequest(httpMocks.createRequest({}), modelStub);
 
-      request.validate().then(actual => {
+      request.validate().then((actual) => {
         actual.should.be.eql({
+          include: [],
           limit: 20,
           offset: 0,
-          include: [],
-          order: []
+          order: [],
         });
 
         done();
@@ -30,29 +30,29 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should reject with errors if sorted with invalid attributes', (done) => {
-      let req = httpMocks.createRequest({
+      const req = httpMocks.createRequest({
         query: {
-          sort: 'this-attr-is-invalid'
-        }
+          sort: 'this-attr-is-invalid',
+        },
       });
 
-      let modelStub = dbMock.define('stub', {
+      const modelStub = dbMock.define('stub', {
+        bar: true,
         foo: true,
-        bar: true
       });
 
-      let request = new GetListRequest(req, modelStub);
+      const request = new GetListRequest(req, modelStub);
 
-      request.validate().catch(actual => {
+      request.validate().catch((actual) => {
         JSON.stringify(actual).should.be.eql(JSON.stringify(
           [{
             status: 400,
             title: 'Bad Request',
-            detail: 'Cannot sort by "this-attr-is-invalid". The resource does not have an attribute called "this-attr-is-invalid"',
+            detail: 'Cannot sort by "this-attr-is-invalid". The resource does not have an attribute called "this-attr-is-invalid"', // tslint:disable-line
             source: {
-              parameter: 'sort'
-            }
-          }]
+              parameter: 'sort',
+            },
+          }],
         ));
       });
 
@@ -60,21 +60,21 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should parse sort param', (done) => {
-      let req = httpMocks.createRequest({
+      const req = httpMocks.createRequest({
         query: {
-          sort: 'foo,-bar,-hooty-hoo,baz,seventy-three'
-        }
+          sort: 'foo,-bar,-hooty-hoo,baz,seventy-three',
+        },
       });
 
-      let modelStub = dbMock.define('stub', {
-        foo: true,
+      const modelStub = dbMock.define('stub', {
         bar: true,
-        hootyHoo: true,
         baz: true,
-        seventyThree: true
-      })
+        foo: true,
+        hootyHoo: true,
+        seventyThree: true,
+      });
 
-      let request = new GetListRequest(req, modelStub);
+      const request = new GetListRequest(req, modelStub);
 
       request.validate().then((actual: any) => {
         actual.order.should.be.eql([
@@ -82,7 +82,7 @@ describe('jsonapi/GetListRequest', () => {
           ['bar', 'DESC'],
           ['hootyHoo', 'DESC'],
           ['baz', 'ASC'],
-          ['seventyThree', 'ASC']
+          ['seventyThree', 'ASC'],
         ]);
 
         done();
@@ -90,23 +90,23 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should parse include param', () => {
-      let req = httpMocks.createRequest({
+      const req = httpMocks.createRequest({
         query: {
-          include: 'foo,bar,foo.bingo,foo.bongo.ding,foo.bongo.dang,bar.toot,foo.bongo.ding.ring,foo.bongo.ding.rang'
-        }
+          include: 'foo,bar,foo.bingo,foo.bongo.ding,foo.bongo.dang,bar.toot,foo.bongo.ding.ring,foo.bongo.ding.rang',
+        },
       });
 
-      let modelStub = dbMock.define('stub', {});
+      const modelStub = dbMock.define('stub', {});
 
-      let foo   = dbMock.define('foo', {});
-      let bar   = dbMock.define('bar', {});
-      let bingo = dbMock.define('bingo', {});
-      let bongo = dbMock.define('bongo', {});
-      let ding  = dbMock.define('ding', {});
-      let ring  = dbMock.define('ring', {});
-      let rang  = dbMock.define('rang', {});
-      let dang  = dbMock.define('dang', {});
-      let toot  = dbMock.define('toot', {});
+      const foo   = dbMock.define('foo', {});
+      const bar   = dbMock.define('bar', {});
+      const bingo = dbMock.define('bingo', {});
+      const bongo = dbMock.define('bongo', {});
+      const ding  = dbMock.define('ding', {});
+      const ring  = dbMock.define('ring', {});
+      const rang  = dbMock.define('rang', {});
+      const dang  = dbMock.define('dang', {});
+      const toot  = dbMock.define('toot', {});
 
       foo.belongsTo(modelStub);
       bingo.belongsTo(foo);
@@ -118,22 +118,22 @@ describe('jsonapi/GetListRequest', () => {
       bar.belongsTo(modelStub);
       toot.belongsTo(bar);
 
-      let request = new GetListRequest(req, modelStub);
-      let actual = request.include;
-      let expected = {
+      const request = new GetListRequest(req, modelStub);
+      const actual = request.include;
+      const expected = {
+        bar: {
+          toot: {},
+        },
         foo: {
           bingo: {},
           bongo: {
+            dang: {},
             ding: {
+              rang: {},
               ring: {},
-              rang: {}
             },
-            dang: {}
-          }
+          },
         },
-        bar: {
-          toot: {}
-        }
       };
 
       actual.should.be.eql(expected);
@@ -142,10 +142,10 @@ describe('jsonapi/GetListRequest', () => {
 
   describe('#validate()', () => {
     // Build model stubs
-    let fooModelStub     = dbMock.define('foo', {});
-    let barModelStub     = dbMock.define('bar', {});
-    let bazModelStub     = dbMock.define('baz', {});
-    let bizBangModelStub = dbMock.define('bizBang', {});
+    const fooModelStub     = dbMock.define('foo', {});
+    const barModelStub     = dbMock.define('bar', {});
+    const bazModelStub     = dbMock.define('baz', {});
+    const bizBangModelStub = dbMock.define('bizBang', {});
 
     // Relate model stubs
     fooModelStub.hasMany(barModelStub, {as: 'bars'});
@@ -157,43 +157,43 @@ describe('jsonapi/GetListRequest', () => {
     // internal API of Sequelize models
     barModelStub.associations = {
       baz: {
-        target: bazModelStub
-      }
+        target: bazModelStub,
+      },
     };
     bazModelStub.associations = {
       'biz-bangs': {
-        target: bizBangModelStub
-      }
+        target: bizBangModelStub,
+      },
     };
     bizBangModelStub.associations = {};
     fooModelStub.associations = {
       bars: {
-        target: barModelStub
-      }
+        target: barModelStub,
+      },
     };
 
     it('should parse include param', (done) => {
-      let params = {
+      const params = {
         query: {
-          include: 'bars,bars.baz,bars.baz.biz-bangs'
-        }
+          include: 'bars,bars.baz,bars.baz.biz-bangs',
+        },
       };
 
-      let expected = {
+      const expected = {
         include: [{
-          model: barModelStub,
           include: [{
-            model: bazModelStub,
             include: [{
-              model: bizBangModelStub
-            }]
-          }]
-        }]
+              model: bizBangModelStub,
+            }],
+            model: bazModelStub,
+          }],
+          model: barModelStub,
+        }],
       };
 
-      let req = httpMocks.createRequest(params);
+      const req = httpMocks.createRequest(params);
 
-      let request = new GetListRequest(req, fooModelStub);
+      const request = new GetListRequest(req, fooModelStub);
 
       request.validate().then((sequelizeQueryParams: any) => {
         sequelizeQueryParams.include.should.be.eql(expected.include);
@@ -203,17 +203,17 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should parse include param when param is empty', (done) => {
-      let params = {
-        query: {}
+      const params = {
+        query: {},
       };
 
-      let expected = {
-        include: []
+      const expected = {
+        include: [],
       };
 
-      let req = httpMocks.createRequest(params);
+      const req = httpMocks.createRequest(params);
 
-      let request = new GetListRequest(req, fooModelStub);
+      const request = new GetListRequest(req, fooModelStub);
 
       request.validate().then((sequelizeQueryParams: any) => {
         sequelizeQueryParams.include.should.be.eql(expected.include);
@@ -223,20 +223,20 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should create errors when include param contains invalid models', (done) => {
-      let params = {
+      const params = {
         query: {
-          include: 'bars,bars.baz,bars.baz.boing,bang,bing.bong'
-        }
+          include: 'bars,bars.baz,bars.baz.boing,bang,bing.bong',
+        },
       };
 
-      let req = httpMocks.createRequest(params);
+      const req = httpMocks.createRequest(params);
 
-      let request = new GetListRequest(req, fooModelStub);
+      const request = new GetListRequest(req, fooModelStub);
 
-      request.validate().catch(errors => {
+      request.validate().catch((errors) => {
         errors.length.should.be.eql(3);
 
-        let errorsString = JSON.stringify(errors);
+        const errorsString = JSON.stringify(errors);
 
         errorsString.should.have
           .string('The model \\"foo\\" has no relationship \\"bang\\"');
@@ -252,20 +252,20 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should create errors when mutually exclusive "page[offset]" and "page[number]" params are set', (done) => {
-      let req = httpMocks.createRequest({
+      const req = httpMocks.createRequest({
         query: {
           page: {
             number: 10,
-            offset: 10
-          }
-        }
+            offset: 10,
+          },
+        },
       });
 
-      let modelStub = dbMock.define('stub', {});
+      const modelStub = dbMock.define('stub', {});
 
-      let request = new GetListRequest(req, modelStub);
+      const request = new GetListRequest(req, modelStub);
 
-      request.validate().catch(errors => {
+      request.validate().catch((errors) => {
         errors.length.should.be.eql(1);
 
         JSON.stringify(errors).should.have
@@ -276,20 +276,20 @@ describe('jsonapi/GetListRequest', () => {
     });
 
     it('should create errors when mutually exclusive "page[limit]" and "page[size]" params are set', (done) => {
-      let req = httpMocks.createRequest({
+      const req = httpMocks.createRequest({
         query: {
           page: {
             limit: 10,
-            size: 10
-          }
-        }
+            size: 10,
+          },
+        },
       });
 
-      let modelStub = dbMock.define('stub', {});
+      const modelStub = dbMock.define('stub', {});
 
-      let request = new GetListRequest(req, modelStub);
+      const request = new GetListRequest(req, modelStub);
 
-      request.validate().catch(errors => {
+      request.validate().catch((errors) => {
         errors.length.should.be.eql(1);
 
         JSON.stringify(errors).should.have
@@ -303,28 +303,29 @@ describe('jsonapi/GetListRequest', () => {
       'offset',
       'limit',
       'size',
-      'number'
-    ].forEach(param => {
+      'number',
+    ].forEach((param) => {
       it(`should create errors when "page[${param}]" is not numeric`, (done) => {
-        let requestParams = {
+        const page = {};
+        page[param] = 'this is not numeric';
+
+        const requestParams = {
           query: {
-            page: {}
-          }
+            page,
+          },
         };
 
-        requestParams.query.page[param] = "this is not numeric";
+        const req = httpMocks.createRequest(requestParams);
 
-        let req = httpMocks.createRequest(requestParams);
+        const modelStub = dbMock.define('stub', {});
 
-        let modelStub = dbMock.define('stub', {});
+        const request = new GetListRequest(req, modelStub);
 
-        let request = new GetListRequest(req, modelStub);
-
-        request.validate().catch(errors => {
+        request.validate().catch((errors) => {
           errors.length.should.be.eql(1);
 
           JSON.stringify(errors).should.have
-            .string(`Invalid pagination param \\"page[${param}]\\" (\\"this is not numeric\\"). \\"page[${param}]\\" must be a number.`);
+            .string(`Invalid pagination param \\"page[${param}]\\" (\\"this is not numeric\\"). \\"page[${param}]\\" must be a number.`); // tslint:disable-line
 
           done();
         });
@@ -336,29 +337,30 @@ describe('jsonapi/GetListRequest', () => {
       ['limit', 0],
       ['size', 0],
       ['number', 1],
-    ].forEach(testCase => {
-      let [param, minimum] = testCase;
+    ].forEach((testCase) => {
+      const [param, minimum] = testCase;
 
       it(`should create errors when "page[${param}]" is less than ${minimum}`, (done) => {
-        let requestParams = {
+        const page = {};
+        page[param] = -1;
+
+        const requestParams = {
           query: {
-            page: {}
-          }
+            page,
+          },
         };
 
-        requestParams.query.page[param] = -1;
+        const req = httpMocks.createRequest(requestParams);
 
-        let req = httpMocks.createRequest(requestParams);
+        const modelStub = dbMock.define('stub', {});
 
-        let modelStub = dbMock.define('stub', {});
+        const request = new GetListRequest(req, modelStub);
 
-        let request = new GetListRequest(req, modelStub);
-
-        request.validate().catch(errors => {
+        request.validate().catch((errors) => {
           errors.length.should.be.eql(1);
 
           JSON.stringify(errors).should.have
-            .string(`Invalid pagination param \\"page[${param}]\\" (\\"-1\\"). \\"page[${param}]\\" must not be a number lower than ${minimum}`);
+            .string(`Invalid pagination param \\"page[${param}]\\" (\\"-1\\"). \\"page[${param}]\\" must not be a number lower than ${minimum}`); // tslint:disable-line
 
           done();
         });
@@ -373,21 +375,21 @@ describe('jsonapi/GetListRequest', () => {
       [{ number: 19            },  360,            20],
       [{ size:   62            },  0,              62],
       [{},                         0,              20],
-    ].forEach(testCase => {
-      let [page, expectedOffset, expectedLimit] = testCase;
+    ].forEach((testCase) => {
+      const [page, expectedOffset, expectedLimit] = testCase;
 
       it(`should parse valid pagination params ${JSON.stringify(page)}`, (done) => {
-        let requestParams = {
+        const requestParams = {
           query: {
-            page: page
-          }
+            page,
+          },
         };
 
-        let req = httpMocks.createRequest(requestParams);
+        const req = httpMocks.createRequest(requestParams);
 
-        let modelStub = dbMock.define('stub', {});
+        const modelStub = dbMock.define('stub', {});
 
-        let request = new GetListRequest(req, modelStub);
+        const request = new GetListRequest(req, modelStub);
 
         request.validate().then((sequelizeQueryParams: any) => {
           sequelizeQueryParams.offset.should.be.eql(expectedOffset);
