@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+import chaiHttp = require('chai-http');
 import Factory from './../factories/all';
 const server = require('../server');
 
@@ -12,10 +12,10 @@ chai.use(chaiHttp);
 
 describe(`API - should paginate get list request`, () => {
   before((done) => {
-    let userDefinitions = Factory.buildList('user', 117);
-    let promises = [];
+    const userDefinitions = Factory.buildList('user', 117);
+    const promises = [];
 
-    userDefinitions.forEach(def => {
+    userDefinitions.forEach((def) => {
       promises.push(server.models.user.create(def));
     });
 
@@ -34,11 +34,11 @@ describe(`API - should paginate get list request`, () => {
         res.should.have.status(200);
         res.body.data.length.should.be.eql(20);
         res.body.links.should.be.eql({
-          self:  'http://localhost:3000/api/users',
           first: 'http://localhost:3000/api/users?page[offset]=0&page[limit]=20',
           last:  'http://localhost:3000/api/users?page[offset]=100&page[limit]=20',
           next:  'http://localhost:3000/api/users?page[offset]=20&page[limit]=20',
-          prev:  null
+          prev:  null,
+          self:  'http://localhost:3000/api/users',
         });
 
         done();
@@ -53,11 +53,11 @@ describe(`API - should paginate get list request`, () => {
         res.should.have.status(200);
         res.body.data.length.should.be.eql(20);
         res.body.links.should.be.eql({
-          self:  'http://localhost:3000/api/users?tacos=4&page[offset]=0&dog=woof&page[limit]=20',
           first: 'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=0&page[limit]=20',
           last:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=100&page[limit]=20',
           next:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=20&page[limit]=20',
-          prev:  null
+          prev:  null,
+          self:  'http://localhost:3000/api/users?tacos=4&page[offset]=0&dog=woof&page[limit]=20',
         });
 
         done();
@@ -72,11 +72,11 @@ describe(`API - should paginate get list request`, () => {
         res.should.have.status(200);
         res.body.data.length.should.be.eql(20);
         res.body.links.should.be.eql({
-          self:  'http://localhost:3000/api/users?tacos=4&page[offset]=80&dog=woof&page[limit]=20',
           first: 'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=0&page[limit]=20',
           last:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=100&page[limit]=20',
           next:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=100&page[limit]=20',
           prev:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=60&page[limit]=20',
+          self:  'http://localhost:3000/api/users?tacos=4&page[offset]=80&dog=woof&page[limit]=20',
         });
 
         done();
@@ -91,11 +91,11 @@ describe(`API - should paginate get list request`, () => {
         res.should.have.status(200);
         res.body.data.length.should.be.eql(17);
         res.body.links.should.be.eql({
-          self:  'http://localhost:3000/api/users?tacos=4&page[offset]=100&dog=woof&page[limit]=20',
           first: 'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=0&page[limit]=20',
           last:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=100&page[limit]=20',
           next:  null,
           prev:  'http://localhost:3000/api/users?tacos=4&dog=woof&page[offset]=80&page[limit]=20',
+          self:  'http://localhost:3000/api/users?tacos=4&page[offset]=100&dog=woof&page[limit]=20',
         });
 
         done();

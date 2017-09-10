@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+import chaiHttp = require('chai-http');
 import Factory from './../factories/all';
 const server = require('../server');
 const model = server.models.user;
@@ -31,7 +31,7 @@ const firstNames = [
   'Frank',
   'Jeff',
   'Kevin',
-  'Alexis'
+  'Alexis',
 ];
 
 describe(`API - should sort get list request`, () => {
@@ -45,7 +45,7 @@ describe(`API - should sort get list request`, () => {
         .get('/api/users?sort=first-name')
         .set('Content-Type', 'application/vnd.api+json')
         .end((err, res) => {
-          let expectedOrder = firstNames.slice().sort();
+          const expectedOrder = firstNames.slice().sort();
 
           res.should.have.status(200);
           res.body.data.length.should.be.eql(20);
@@ -62,7 +62,7 @@ describe(`API - should sort get list request`, () => {
 });
 
 function seedUsers() {
-  return Promise.all(firstNames.map(firstName => {
-    return model.create(Factory.build('user', { firstName: firstName }));
+  return Promise.all(firstNames.map((firstName) => {
+    return model.create(Factory.build('user', { firstName }));
   }));
 }

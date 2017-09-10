@@ -3,10 +3,10 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+import chaiHttp = require('chai-http');
 const server = require('../server');
 chai.should();
-const sinon = require('sinon');
+import sinon = require('sinon');
 import Factory from './../factories/all';
 
 chai.use(chaiHttp);
@@ -19,7 +19,7 @@ describe('users', () => {
 
     Promise.all([
       server.db.query('TRUNCATE users'),
-      server.db.query('TRUNCATE posts')
+      server.db.query('TRUNCATE posts'),
     ]).then(() => done());
   });
 
@@ -29,9 +29,9 @@ describe('users', () => {
 
   describe('GET /api/users', () => {
     it('should return an array of users', (done) => {
-      let users = Factory.buildList('user', 2);
+      const users = Factory.buildList('user', 2);
 
-      users.forEach(user => {
+      users.forEach((user) => {
         server.models.user.create(user);
       });
 
@@ -49,7 +49,7 @@ describe('users', () => {
     });
 
     it('should sideload related posts', (done) => {
-      let user = Factory.build('user', { id: 1 });
+      const user = Factory.build('user', { id: 1 });
       server.models.user.create(user);
 
       Factory.buildList('post', 2).forEach((post, index) => {
@@ -87,10 +87,10 @@ describe('users', () => {
           res.body.should.be.eql({
             data: null,
             errors: [{
+              detail: 'No users found with the id of 1',
               status: 404,
               title: 'Not Found',
-              detail: 'No users found with the id of 1'
-            }]
+            }],
           });
 
           done();
@@ -98,15 +98,15 @@ describe('users', () => {
     });
 
     it('should retrieve user by id', (done) => {
-      let referenceDate = new Date(0);
+      const referenceDate = new Date(0);
 
       server.models.user.create({
+        createdAt: referenceDate,
+        email: 'tacobellemployee2@example.com',
         firstName: 'Jane',
         lastName: 'Wiggins',
-        email: 'tacobellemployee2@example.com',
-        createdAt: referenceDate,
+        passwordHash: 'fake hash',
         updatedAt: referenceDate,
-        passwordHash: 'fake hash'
       });
 
       chai.request(server.app)
@@ -116,28 +116,28 @@ describe('users', () => {
           res.should.have.status(200);
           res.body.should.be.eql({
             data: {
-              type: 'users',
-              id: '1',
               attributes: {
+                'created-at': referenceDate.toJSON(),
+                'email': 'tacobellemployee2@example.com',
                 'first-name': 'Jane',
                 'last-name': 'Wiggins',
-                email: 'tacobellemployee2@example.com',
                 'password-hash': 'fake hash',
-                'created-at': referenceDate.toJSON(),
-                'updated-at': referenceDate.toJSON()
+                'updated-at': referenceDate.toJSON(),
               },
+              id: '1',
               relationships: {
                 posts: {
                   links: {
+                    related: 'http://localhost:3000/api/users/1/posts',
                     self: 'http://localhost:3000/api/users/1/relationships/posts',
-                    related: 'http://localhost:3000/api/users/1/posts'
-                  }
-                }
-              }
+                  },
+                },
+              },
+              type: 'users',
             },
             links: {
-              self: 'http://localhost:3000/api/users/1'
-            }
+              self: 'http://localhost:3000/api/users/1',
+            },
           });
 
           done();
@@ -147,16 +147,16 @@ describe('users', () => {
 
   describe('GET /api/users/1/posts', () => {
     it('should retrieve posts related to user', (done) => {
-      let userModel = server.models.user;
-      let postModel = server.models.post;
-      let user = Factory.build('user', { id: 1 });
-      let posts = Factory.buildList('post', 4, { userId: 1 });
-      let unrelatedPost = Factory.build('post', { userId: 2 });
+      const userModel = server.models.user;
+      const postModel = server.models.post;
+      const user = Factory.build('user', { id: 1 });
+      const posts = Factory.buildList('post', 4, { userId: 1 });
+      const unrelatedPost = Factory.build('post', { userId: 2 });
 
-      let promises = [
+      const promises = [
         userModel.create(user),
-        postModel.create(unrelatedPost)
-      ].concat(posts.map(p => postModel.create(p)));
+        postModel.create(unrelatedPost),
+      ].concat(posts.map((p) => postModel.create(p)));
 
       Promise.all(promises).then(() => {
         chai.request(server.app)
@@ -179,17 +179,17 @@ describe('users', () => {
         .set('Content-Type', 'application/vnd.api+json')
         .send({
           data: {
-            type: 'users',
             attributes: {
+              'email': 'tim.smith@example.com',
               'first-name': 'Tim',
               'last-name': 'Smith',
-              email: 'tim.smith@example.com',
-              'password-hash': 'fake password hash'
-            }
-          }
+              'password-hash': 'fake password hash',
+            },
+            type: 'users',
+          },
         })
         .end((err, res) => {
-          let attrs = res.body.data.attributes;
+          const attrs = res.body.data.attributes;
 
           res.should.have.status(201);
           res.body.data.type.should.be.eql('users');
@@ -209,25 +209,25 @@ describe('users', () => {
         .set('Content-Type', 'application/vnd.api+json')
         .send({
           data: {
-            type: 'users',
-            id: 1,
             attributes: {
+              'email': 'sammysports1@example.com',
               'first-name': 'Samantha',
               'last-name': 'von Berg',
-              email: 'sammysports1@example.com',
-              'password-hash': 'fake password hash'
-            }
-          }
+              'password-hash': 'fake password hash',
+            },
+            id: 1,
+            type: 'users',
+          },
         })
         .end((err, res) => {
           res.should.have.status(404);
           res.body.should.be.eql({
             data: null,
             errors: [{
+              detail: 'No users found with the id of 1',
               status: 404,
               title: 'Not Found',
-              detail: 'No users found with the id of 1'
-            }]
+            }],
           });
 
           done();
@@ -236,10 +236,10 @@ describe('users', () => {
 
     it('should update user', (done) => {
       server.models.user.create({
+        email: 'roncarlin@example.com',
         firstName: 'Ronald',
         lastName: 'C',
-        email: 'roncarlin@example.com',
-        passwordHash: 'fake password hash'
+        passwordHash: 'fake password hash',
       });
 
       chai.request(server.app)
@@ -247,18 +247,18 @@ describe('users', () => {
         .set('Content-Type', 'application/vnd.api+json')
         .send({
           data: {
-            type: 'users',
-            id: 1,
             attributes: {
+              'email': 'rcarlin87@wisconsinu.edu',
               'first-name': 'Ron',
               'last-name': 'Carlin',
-              email: 'rcarlin87@wisconsinu.edu',
-              'password-hash': 'fake password hash'
-            }
-          }
+              'password-hash': 'fake password hash',
+            },
+            id: 1,
+            type: 'users',
+          },
         })
         .end((err, res) => {
-          let attrs = res.body.data.attributes;
+          const attrs = res.body.data.attributes;
 
           res.should.have.status(200);
           res.body.data.type.should.be.eql('users');
@@ -281,10 +281,10 @@ describe('users', () => {
           res.body.should.be.eql({
             data: null,
             errors: [{
+              detail: 'No users found with the id of 1',
               status: 404,
               title: 'Not Found',
-              detail: 'No users found with the id of 1'
-            }]
+            }],
           });
 
           done();
@@ -293,11 +293,11 @@ describe('users', () => {
 
     it('should delete user', (done) => {
       server.models.user.create({
-        id: 1,
-        firstName: 'Jerry',
-        lastName: 'Schwarz',
         email: 'cubsfan25@example.edu',
-        passwordHash: 'fake password hash'
+        firstName: 'Jerry',
+        id: 1,
+        lastName: 'Schwarz',
+        passwordHash: 'fake password hash',
       });
 
       chai.request(server.app)
