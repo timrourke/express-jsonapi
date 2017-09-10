@@ -1,16 +1,16 @@
 'use strict';
 
 import * as Sequelize from 'sequelize';
-const UserAttrs = require('./User');
-const PostAttrs = require('./Post');
-const inflection = require('inflection');
-const StringUtils = require('./../utils/String');
+const UserAttrs = require('./User'); // tslint:disable-line
+const PostAttrs = require('./Post'); // tslint:disable-line
+import inflection = require('inflection');
+const StringUtils = require('./../utils/String'); // tslint:disable-line
 
 // Add JSON API type lookup to Model prototype
-Sequelize.Model['prototype'].getType = function(): string {
+Sequelize.Model['prototype'].getType = function(): string { // tslint:disable-line
   if (!this.hasOwnProperty('_jsonApiType')) {
     this._jsonApiType = inflection.pluralize(
-      StringUtils.convertCamelToDasherized(this.name)
+      StringUtils.convertCamelToDasherized(this.name),
     );
   }
 
@@ -18,7 +18,7 @@ Sequelize.Model['prototype'].getType = function(): string {
 };
 
 // Alias to JSON API type lookup on Model
-Sequelize.Instance['prototype'].getType = function(): string {
+Sequelize.Instance['prototype'].getType = function(): string { // tslint:disable-line
   return this.Model.getType();
 };
 
@@ -38,7 +38,7 @@ export function defineModels(sequelize: Sequelize.Connection) {
   Post.belongsTo(User);
 
   return {
-    User: User,
-    Post: Post,
+    User,
+    Post,
   };
 }
