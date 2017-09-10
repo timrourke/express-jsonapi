@@ -3,12 +3,12 @@
 process.env.NODE_ENV = 'test';
 
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
-const Factory = require('./../factories/all');
-const inflection = require('inflection');
+import chaiHttp = require('chai-http');
 const server = require('../server');
-const sinon = require('sinon');
-const StringUtils = require('./../utils/String');
+import inflection = require('inflection');
+import sinon = require('sinon');
+import StringUtils from './../utils/String';
+import Factory from './../factories/all';
 
 chai.should();
 chai.use(chaiHttp);
