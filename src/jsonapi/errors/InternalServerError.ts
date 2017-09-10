@@ -2,7 +2,7 @@ import BaseError from './BaseError';
 
 /**
  * InternalServerError useful for handling unrecoverable errors.
- * 
+ *
  * @class InternalServerError
  * @extends BaseError
  */
@@ -18,7 +18,7 @@ export default class InternalServerError extends BaseError {
     return {
       status: 500,
       title: 'Internal Server Error',
-      detail: 'There was an internal error processing your request. Please try again, or contact the system administrator.'
+      detail: 'There was an internal error processing your request. Please try again, or contact the system administrator.', // tslint:disable-line
     };
   }
 
