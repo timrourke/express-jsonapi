@@ -7,7 +7,7 @@ const chaiHttp = require('chai-http');
 const server = require('../server');
 chai.should();
 const sinon = require('sinon');
-const Factory = require('./../factories/all');
+import Factory from './../factories/all';
 
 chai.use(chaiHttp);
 

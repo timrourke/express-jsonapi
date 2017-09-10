@@ -1,9 +1,9 @@
 'use strict';
 
+import { NextFunction, Request, Response } from 'express';
 import { Instance, Model } from 'sequelize';
-import { Request, Response, NextFunction } from 'express';
 import BadRequest from './errors/BadRequest';
-const StringUtils = require('./../utils/String');
+import StringUtils from './../utils/String';
 
 /**
  * Parses the JSON API include param and builds a multidimensional graph of
@@ -368,13 +368,11 @@ export default class GetListRequest {
     if (isNaN(parsedValue)) {
       errors.push(buildPaginationErrIsNaN(paramName, this.pagination[paramName]));
     } else if (parsedValue < 0) {
-      errors.push(
-        buildPaginationErrOffsetLessThanMin(
+      errors.push(buildPaginationErrOffsetLessThanMin(
           paramName,
           this.pagination[paramName],
-          minimumString
-        )
-      );
+          minimumString,
+       ));
     }
   }
 
@@ -386,14 +384,14 @@ export default class GetListRequest {
    * @param {BadRequest[]} errors Array of errors
    * @return {Number}
    */
-  private calculateLimitForOffsetLimitStrategy(errors: Array<BadRequest>): number {
+  private calculateLimitForOffsetLimitStrategy(errors: BadRequest[]): number {
     const limit = (this.paginationHasLimit()) ?
       parseInt(this.pagination.limit, 10) :
       20;
 
     this.checkParsedPaginationParamForErrors('limit', limit, '0 (zero)', errors);
 
-    return limit
+    return limit;
   }
 
   /**
@@ -404,7 +402,7 @@ export default class GetListRequest {
    * @param {BadRequest[]} errors Array of errors
    * @return {Number}
    */
-  private calculateOffsetForOffsetLimitStrategy(errors: Array<BadRequest>): number {
+  private calculateOffsetForOffsetLimitStrategy(errors: BadRequest[]): number {
     const offset = (this.paginationHasOffset()) ?
       parseInt(this.pagination.offset, 10) :
       0;
@@ -422,7 +420,7 @@ export default class GetListRequest {
    * @param {BadRequest[]} errors Array of errors
    * @return {Number}
    */
-  private calculateLimitForPageNumberSizeStrategy(errors: Array<BadRequest>): number {
+  private calculateLimitForPageNumberSizeStrategy(errors: BadRequest[]): number {
     const limit = (this.paginationHasSize()) ?
       parseInt(this.pagination.size, 10) :
       20;
@@ -441,7 +439,7 @@ export default class GetListRequest {
    * @param {BadRequest[]} errors Array of errors
    * @return {Number}
    */
-  private calculateOffsetForPageNumberSizeStrategy(limit: number, errors: Array<BadRequest>): number {
+  private calculateOffsetForPageNumberSizeStrategy(limit: number, errors: BadRequest[]): number {
     const offset = (this.paginationHasNumber()) ?
       (parseInt(this.pagination.number, 10) * limit) - limit :
       0;
@@ -460,7 +458,7 @@ export default class GetListRequest {
   private validatePagination(): Array<BadRequest> {
     let offset = 0;
     let limit = 20;
-    let errors: Array<BadRequest> = [];
+    const errors: BadRequest[] = [];
 
     // Check for mutually exclusive params "page[offset]" and "page[number]"
     if (this.paginationHasOffset() && this.paginationHasNumber()) {
@@ -485,8 +483,8 @@ export default class GetListRequest {
     }
 
     Object.assign(this.sequelizeQueryParams, {
-      limit: limit,
-      offset: offset
+      limit,
+      offset,
     });
 
     return errors;

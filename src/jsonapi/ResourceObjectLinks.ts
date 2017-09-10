@@ -1,10 +1,10 @@
 'use strict';
 
-const StringUtils = require('./../utils/String');
-import config from './../config/config';
 import { Instance } from 'sequelize';
+import config from './../config/config';
+import StringUtils from './../utils/String';
 
-interface LinksInterface {
+interface ILinksInterface {
   self: string;
 }
 
@@ -12,21 +12,21 @@ export default class ResourceObjectLinks {
 
   /**
    * JSON API links object for this Resource Object
-   * 
+   *
    * @see http://jsonapi.org/format/#document-links
-   * 
+   *
    * @property links
-   * @type {LinksInterface}
+   * @type {ILinksInterface}
    */
-  links: LinksInterface;
+  public links: ILinksInterface;
 
   /**
    * Sequelize model instance to build links for
-   * 
+   *
    * @property modelInstance
    * @type {Sequelize.Instance}
    */
-  modelInstance: Instance<any, any>;
+  public modelInstance: Instance<any, any>;
 
   /**
    * Constructor.
@@ -36,13 +36,13 @@ export default class ResourceObjectLinks {
   constructor(modelInstance: Instance<any, any>) {
     this.modelInstance = modelInstance;
 
-    let baseUrl = config.getApiBaseUrl();
-    let modelId = this.modelInstance.get('id');
-    let modelName = this.modelInstance.getType();
-    let modelRoute = StringUtils.convertCamelToDasherized(modelName);
+    const baseUrl = config.getApiBaseUrl();
+    const modelId = this.modelInstance.get('id');
+    const modelName = this.modelInstance.getType();
+    const modelRoute = StringUtils.convertCamelToDasherized(modelName);
 
     this.links = {
-      self: `${baseUrl}/${modelRoute}/${modelId}`
+      self: `${baseUrl}/${modelRoute}/${modelId}`,
     };
   }
 
@@ -51,7 +51,7 @@ export default class ResourceObjectLinks {
    *
    * @return {Object}
    */
-  toJSON() {
+  public toJSON() {
     return this.links;
   }
 }

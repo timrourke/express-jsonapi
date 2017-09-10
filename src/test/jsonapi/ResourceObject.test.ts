@@ -17,7 +17,7 @@ function ModelInstanceStub() {
     'id',
     'foo',
     'barThing',
-    'bazItem'
+    'bazItem',
   ];
 
   this.get = function(keyName) {
@@ -28,109 +28,113 @@ function ModelInstanceStub() {
     return keyName + ' value';
   };
 
-  this.getType = function() {
+  this.getType = () => {
     return 'mocked-model-instances';
   };
 
   this.id = 34672;
 
   this.Model = {
-    name: 'mockedModelInstance',
     associations: {
-      'bar': {},
-      'baz': {}
+      bar: {},
+      baz: {},
     },
-    getType: function() {
+    getType: () => {
       return 'mocked-model-instances';
-    }
+    },
+    name: 'mockedModelInstance',
   };
 }
 
 describe('jsonapi/ResourceObject', () => {
   describe('#toJSON()', () => {
     it('should convert to JSON API-compliant JSON without associations key', () => {
-      let modelWithoutAssocs = new ModelInstanceStub();
+      const modelWithoutAssocs = new ModelInstanceStub();
       delete modelWithoutAssocs.Model.associations;
 
-      let resource = new ResourceObject(modelWithoutAssocs);
-      let actual = JSON.stringify(resource);
-      let expected = {
-        type: 'mocked-model-instances',
-        id: '34672',
+      const resource = new ResourceObject(modelWithoutAssocs);
+      const actual = JSON.stringify(resource);
+      const expected = {
         attributes: {
-          'foo': 'foo value',
           'bar-thing': 'barThing value',
-          'baz-item': 'bazItem value'
+          'baz-item': 'bazItem value',
+          'foo': 'foo value',
         },
+        id: '34672',
+        type: 'mocked-model-instances',
       };
 
-      actual.should.be.eql(JSON.stringify(expected));
+      JSON.parse(actual)
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should convert to JSON API-compliant JSON with no associations', () => {
-      let modelWithoutAssocs = new ModelInstanceStub();
+      const modelWithoutAssocs = new ModelInstanceStub();
       modelWithoutAssocs.Model.associations = {};
 
-      let resource = new ResourceObject(modelWithoutAssocs);
-      let actual = JSON.stringify(resource);
-      let expected = {
-        type: 'mocked-model-instances',
-        id: '34672',
+      const resource = new ResourceObject(modelWithoutAssocs);
+      const actual = JSON.stringify(resource);
+      const expected = {
         attributes: {
-          'foo': 'foo value',
           'bar-thing': 'barThing value',
-          'baz-item': 'bazItem value'
+          'baz-item': 'bazItem value',
+          'foo': 'foo value',
         },
+        id: '34672',
+        type: 'mocked-model-instances',
       };
 
-      actual.should.be.eql(JSON.stringify(expected));
+      JSON.parse(actual)
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should convert to JSON API-compliant JSON with associations', () => {
-      let resource = new ResourceObject(new ModelInstanceStub());
-      let actual = JSON.stringify(resource);
-      let expected = {
-        type: 'mocked-model-instances',
-        id: '34672',
+      const resource = new ResourceObject(new ModelInstanceStub());
+      const actual = JSON.stringify(resource);
+      const expected = {
         attributes: {
-          'foo': 'foo value',
           'bar-thing': 'barThing value',
-          'baz-item': 'bazItem value'
+          'baz-item': 'bazItem value',
+          'foo': 'foo value',
         },
+        id: '34672',
         relationships: {
           bar: {
             links: {
-              self: 'http://localhost:3000/api/mocked-model-instances/34672/relationships/bar',
               related: 'http://localhost:3000/api/mocked-model-instances/34672/bar',
-            }
+              self: 'http://localhost:3000/api/mocked-model-instances/34672/relationships/bar',
+            },
           },
           baz: {
             links: {
-              self: 'http://localhost:3000/api/mocked-model-instances/34672/relationships/baz',
               related: 'http://localhost:3000/api/mocked-model-instances/34672/baz',
-            }
+              self: 'http://localhost:3000/api/mocked-model-instances/34672/relationships/baz',
+            },
           },
-        }
+        },
+        type: 'mocked-model-instances',
       };
 
-      actual.should.be.eql(JSON.stringify(expected));
+      JSON.parse(actual)
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
 
     it('should convert to JSON API-compliant JSON when no relationships', () => {
-      let resource = new ResourceObject(new ModelInstanceStub());
+      const resource = new ResourceObject(new ModelInstanceStub());
       resource.modelInstance.Model.associations = {};
-      let actual = JSON.stringify(resource);
-      let expected = {
-        type: 'mocked-model-instances',
-        id: '34672',
+      const actual = JSON.stringify(resource);
+      const expected = {
         attributes: {
-          'foo': 'foo value',
           'bar-thing': 'barThing value',
-          'baz-item': 'bazItem value'
-        }
+          'baz-item': 'bazItem value',
+          'foo': 'foo value',
+        },
+        id: '34672',
+        type: 'mocked-model-instances',
       };
 
-      actual.should.be.eql(JSON.stringify(expected));
+      JSON.parse(actual)
+        .should.be.eql(JSON.parse(JSON.stringify(expected)));
     });
   });
 });
