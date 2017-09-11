@@ -20,4 +20,3 @@ test:
         environment:
           NODE_ENV: test
           MOCHA_FILE: $CIRCLE_ARTIFACTS/test-results.xml
-
