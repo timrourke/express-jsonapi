@@ -1,15 +1,10 @@
 ---
 engines:
-  csslint:
-    enabled: true
   duplication:
     enabled: true
     config:
       languages:
-      - ruby
       - javascript
-      - python
-      - php
   eslint:
     enabled: true
   fixme:
@@ -19,14 +14,8 @@ engines:
     channel: beta
 ratings:
   paths:
-  - "**.css"
-  - "**.inc"
   - "**.js"
-  - "**.jsx"
-  - "**.module"
-  - "**.php"
-  - "**.py"
-  - "**.rb"
+  - "**.ts"
 exclude_paths:
 - converage/
 - dist/
