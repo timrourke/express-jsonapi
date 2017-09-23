@@ -151,7 +151,7 @@ export default class Route {
           serializePaginationLinks(count, sequelizeQueryParams, parsedUrl),
         );
 
-        // Serialize any sideloaded models in the included kay
+        // Serialize any sideloaded models in the included key
         serializeIncludesForJson(foundModels, json);
 
         res.json(json);
@@ -240,7 +240,7 @@ export default class Route {
     const json = {
       data: new JsonApiResourceObject(relatedModel),
       links: {
-        self: `${config.getApiBaseUrl()}/${this.modelType}/${parentModel.get('id')}/${relatedPathSegment}`,
+        self: this.buildRelatedLink(parentModel, relatedPathSegment),
       },
     };
 
@@ -284,6 +284,7 @@ export default class Route {
   private buildRelatedLink(parentModel: Instance<any, any>, relatedPathSegment: string): string {
     return `${config.getApiBaseUrl()}/${this.modelType}/${parentModel.get('id')}/${relatedPathSegment}`;
   }
+
   /**
    * Build a related get list route for a given route's model's relationship
    *
@@ -564,8 +565,8 @@ function serializeIncludesForJson(modelArray, json) {
  * @return {Object}
  */
 function serializePaginationLinks(count: number, sequelizeQueryParams: any, parsedUrl: any) {
-  const base       = config.getBaseUrl() + parsedUrl.pathname;
-  let query      = (parsedUrl.search || '')
+  const base = config.getBaseUrl() + parsedUrl.pathname;
+  let query  = (parsedUrl.search || '')
     .slice(1)
     .replace(REGEX_TO_REMOVE_PAGE_PARAMS, '');
   const offset     = sequelizeQueryParams.offset;
