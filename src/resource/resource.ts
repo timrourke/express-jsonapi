@@ -10,32 +10,26 @@ import {
 import { Instance, Model } from 'sequelize';
 import StringUtils from '../utils/String';
 import NotFoundError from './../jsonapi/errors/NotFoundError';
-import extractIncludedModelsAsFlatArray from './../jsonapi/extract-included-models-as-flat-array';
 import GetListRequest from './../jsonapi/GetListRequest';
 import NotFoundHandler from './../jsonapi/middleware/not-found-handler';
-import ResourceIdentifierObject from './../jsonapi/ResourceIdentifierObject';
-import JsonApiResourceObject from './../jsonapi/ResourceObject';
-import JsonApiResourceObjectLinks from './../jsonapi/ResourceObjectLinks';
 import parseurl = require('parseurl');
 import config from './../config/config';
 import Controller, { IControllerConstructor } from './../controllers/controller';
 import tryHandlingCrudError from './../jsonapi/errors/tryHandlingCrudError';
+import Serializer from './../jsonapi/Serializer';
+
+interface IGetListResult {
+  rows: Array<Instance<any, any>>;
+  count: number;
+}
 
 /**
- * Regular expression for removing pagination-related query params from a URL
+ * The Resource class builds the JSON API routes for a given Sequelize model,
+ * and configures dispatching of actions to that model's controller
  *
- * @property {RegExp}
- * @final
+ * @class Resource
  */
-const REGEX_TO_REMOVE_PAGE_PARAMS = /[\?&]?page\[[\w]+\]=[\d]*/g;
-
-/**
- * The Route class builds the JSON API routes for a given Sequelize model, and
- * configures dispatching of actions to that model's controller
- *
- * @class Route
- */
-export default class Route {
+export default class Resource {
 
   /**
    * Express application instance
@@ -45,7 +39,7 @@ export default class Route {
   private app: Application;
 
   /**
-   * Sequelize model class to build routes for
+   * Sequelize model class to build resource for
    *
    * @property {Sequelize.Model}
    */
@@ -59,31 +53,41 @@ export default class Route {
   private modelType: string;
 
   /**
-   * The controller class this route should dispatch actions to
+   * The controller class this resource should dispatch actions to
    *
    * @property {ControllerConstructor}
    */
   private controllerClass: IControllerConstructor;
 
+  private serializer: Serializer;
+
   /**
-   * Create a JSON API-compliant route
+   * Create a JSON API-compliant resource
    *
    * @constructor
    * @param {Express.Application} app The Express application instance
-   * @param {Sequelize.Model} model The Sequelize model class to build routes for
+   * @param {Sequelize.Model} model The Sequelize model class to build a resource for
    * @param {ControllerConstructor} controllerClass The controller class to map requests to
+   * @param {Serializer} serializer The serializer for JSON API responses
    * @return {void}
    */
-  constructor(app: Application, model: Model<any, any>, controllerClass: IControllerConstructor) {
+  constructor(
+    app: Application,
+    model: Model<any, any>,
+    controllerClass: IControllerConstructor,
+    serializer: Serializer,
+  ) {
     this.app = app;
     this.model = model;
     this.controllerClass = controllerClass;
     this.modelType = model.getType();
+    this.serializer = serializer;
   }
 
   /**
-   * Initilize the routes on the app
+   * Initilize the resource's route handlers on the Express application instance
    *
+   * @method initialize
    * @return {void}
    */
   public initialize(): void {
@@ -128,34 +132,19 @@ export default class Route {
   private handleGetListRequest(req: Request, res: Response, next: NextFunction): void {
     const controller = new this.controllerClass(this.model);
     const request    = new GetListRequest(req, this.model);
+    const parsedUrl  = parseurl(req);
 
-    request.validate().then((sequelizeQueryParams) => {
-      controller.getList(sequelizeQueryParams).then((result: { rows: Array<Instance<any, any>>, count: number }) => {
-        const parsedUrl: any      = parseurl(req);
-        const queryParams: string = parsedUrl.search || '';
-        const count: number       = result.count;
-        const foundModels: Array<Instance<any, any>> = result.rows;
-        const json = {
-          data: foundModels.map((model: Instance<any, any>) => new JsonApiResourceObject(model)),
-          links: {
-            self: `${config.getApiBaseUrl()}/${this.modelType}${queryParams}`,
-          },
-          meta: {
-            total: count,
-          },
-        };
-
-        // Include pagination links in the response payload
-        Object.assign(
-          json.links,
-          serializePaginationLinks(count, sequelizeQueryParams, parsedUrl),
-        );
-
-        // Serialize any sideloaded models in the included key
-        serializeIncludesForJson(foundModels, json);
-
-        res.json(json);
-      }).catch((err) => {
+    request.validate().then((sequelizeQueryParams: any) => {
+      controller.getList(sequelizeQueryParams).then((getListResult: IGetListResult) => {
+        res.json(this.serializer.buildGetListResponse(
+          parsedUrl,
+          sequelizeQueryParams.offset,
+          sequelizeQueryParams.limit,
+          getListResult.count,
+          getListResult.rows,
+        ));
+      })
+      .catch((err) => {
         next(err);
       });
     }).catch((errors) => {
@@ -199,13 +188,13 @@ export default class Route {
           let json = {};
 
           if (association.isMultiAssociation) {
-            json = this.buildMultiRelatedResponse(
+            json = this.serializer.buildMultiRelatedResponse(
               relatedPathSegment,
               parentModel,
               relatedModels,
             );
           } else {
-            json = this.buildSingleRelatedResponse(
+            json = this.serializer.buildSingleRelatedResponse(
               relatedPathSegment,
               parentModel,
               relatedModels,
@@ -225,70 +214,9 @@ export default class Route {
   }
 
   /**
-   * Build the JSON response for a related request for a to-one relationship
-   *
-   * @param {String} relatedPathSegment The URL path segment for the relationship
-   * @param {Sequelize.Instance} parentModel The parent Sequelize model instance
-   * @param {Sequelize.Instance} relatedModel The related Sequelize model instance
-   * @return {Object}
-   */
-  private buildSingleRelatedResponse(
-    relatedPathSegment: string,
-    parentModel: Instance<any, any>,
-    relatedModel: Instance<any, any>,
-  ) {
-    const json = {
-      data: new JsonApiResourceObject(relatedModel),
-      links: {
-        self: this.buildRelatedLink(parentModel, relatedPathSegment),
-      },
-    };
-
-    serializeIncludesForJson(relatedModel, json);
-
-    return json;
-  }
-
-  /**
-   * Build the JSON response for a related request for a to-many relationship
-   *
-   * @param {String} relatedPathSegment The URL path segment for the relationship
-   * @param {Sequelize.Instance} parentModel The parent Sequelize model instance
-   * @param {Sequelize.Instance} relatedModels The related Sequelize model instances
-   * @return {Object}
-   */
-  private buildMultiRelatedResponse(
-    relatedPathSegment: string,
-    parentModel: Instance<any, any>,
-    relatedModels: Array<Instance<any, any>>,
-  ) {
-    const json = {
-      data: relatedModels.map((model) => new JsonApiResourceObject(model)),
-      links: {
-        self: this.buildRelatedLink(parentModel, relatedPathSegment),
-      },
-    };
-
-    serializeIncludesForJson(relatedModels, json);
-
-    return json;
-  }
-
-  /**
-   * Build the `self` link's value for a related request
-   *
-   * @param {Sequelize.Instance} parentModel Sequelize model instance to build `self` link for
-   * @param {String} relatedPathSegment The URL path segment for the relationship
-   * @return {String}
-   */
-  private buildRelatedLink(parentModel: Instance<any, any>, relatedPathSegment: string): string {
-    return `${config.getApiBaseUrl()}/${this.modelType}/${parentModel.get('id')}/${relatedPathSegment}`;
-  }
-
-  /**
    * Build a related get list route for a given route's model's relationship
    *
-   * @param {Route} route Route instance to define the route handlers for
+   * @method buildRelatedGetListRoutesForRelationship
    * @param {String} relationship Name of the relationship to define route handlers for
    * @return {void}
    */
@@ -382,15 +310,21 @@ export default class Route {
         sequelizeQueryParams.attributes = ['id'];
 
         parentModel[accessorMethodName](sequelizeQueryParams).then((relatedModels) => {
-          const json = {
-            data: (association.isMultiAssociation) ?
-              relatedModels.map((model) => new ResourceIdentifierObject(model)) :
-              new ResourceIdentifierObject(relatedModels),
-            links: {
-              related: this.buildRelatedLink(parentModel, relatedPathSegment),
-              self: `${config.getApiBaseUrl()}/${this.modelType}/${parentModel.get('id')}/relationships/${relatedPathSegment}`,
-            },
-          };
+          let json = {};
+
+          if (association.isMultiAssociation) {
+            json = this.serializer.buildRelationshipObjectsMultiResponse(
+              relatedPathSegment,
+              parentModel,
+              relatedModels,
+            );
+          } else {
+            json = this.serializer.buildRelationshipObjectsSingleResponse(
+              relatedPathSegment,
+              parentModel,
+              relatedModels,
+            );
+          }
 
           res.json(json);
         }).catch((err) => {
@@ -420,10 +354,7 @@ export default class Route {
         return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
-      res.json({
-        data: new JsonApiResourceObject(foundModel),
-        links: new JsonApiResourceObjectLinks(foundModel),
-      });
+      res.json(this.serializer.buildSingleModelResponse(foundModel));
     }).catch((err) => {
       next(err);
     });
@@ -442,15 +373,12 @@ export default class Route {
     const attrs = convertAttrsToCamelCase(req.body.data.attributes);
 
     controller.createOne(attrs).then((newModel) => {
-      const links = new JsonApiResourceObjectLinks(newModel);
+      const json = this.serializer.buildSingleModelResponse(newModel);
 
       res
-        .location(links.links.self)
+        .location(json.links.self)
         .status(201)
-        .json({
-          data: new JsonApiResourceObject(newModel),
-          links,
-        });
+        .json(json);
     }).catch((err) => {
       tryHandlingCrudError(err, this.model).then((errorResponseData: any) => {
         res
@@ -479,10 +407,7 @@ export default class Route {
         return throwNoModelTypeFoundWithId(req, res, this.modelType);
       }
 
-      res.json({
-        data: new JsonApiResourceObject(updatedModel),
-        links: new JsonApiResourceObjectLinks(updatedModel),
-      });
+      res.json(this.serializer.buildSingleModelResponse(updatedModel));
     }).catch((err) => {
       tryHandlingCrudError(err, this.model).then((errorResponseData: any) => {
         res
@@ -536,70 +461,6 @@ function convertAttrsToCamelCase(attrs: any): any {
 }
 
 /**
- * Serialize includes for JSON response.
- *
- * Extracts and flattens an array of any related models that are nested in the
- * models returned by a Sequelize query, ensuring uniqueness of returned models
- * by type and ID.
- *
- * @param {Sequelize.Model[]} modelArray Array of models to serialize as included
- * @param {Object} json Object to be serialized as JSON response
- */
-function serializeIncludesForJson(modelArray, json) {
-  const includedModels = [];
-
-  extractIncludedModelsAsFlatArray(modelArray, includedModels);
-
-  if (includedModels.length) {
-    json.included = getUniqueModelArray(includedModels)
-      .map((model) => new JsonApiResourceObject(model));
-  }
-}
-
-/**
- * Build pagination links for a get list request.
- *
- * @param {Number} count The total count for a given query
- * @param {Object} sequelizeQueryParams The query constraints passed to Sequelize
- * @param {Object} parsedUrl The parsed URL
- * @return {Object}
- */
-function serializePaginationLinks(count: number, sequelizeQueryParams: any, parsedUrl: any) {
-  const base = config.getBaseUrl() + parsedUrl.pathname;
-  let query  = (parsedUrl.search || '')
-    .slice(1)
-    .replace(REGEX_TO_REMOVE_PAGE_PARAMS, '');
-  const offset     = sequelizeQueryParams.offset;
-  const limit      = sequelizeQueryParams.limit;
-  const lastOffset = Math.floor(count / limit) * limit;
-
-  if (query) {
-    query += '&';
-  }
-
-  const baseUrl = `${base}?${query}`;
-
-  const prev = (offset - limit > 0) ?
-    `${baseUrl}page[offset]=${offset - limit}&page[limit]=${limit}` :
-    null;
-
-  const next = offset + limit <= lastOffset ?
-    `${baseUrl}page[offset]=${offset + limit}&page[limit]=${limit}` :
-    null;
-
-  const first = `${baseUrl}page[offset]=0&page[limit]=${limit}`;
-
-  const last = `${baseUrl}page[offset]=${lastOffset}&page[limit]=${limit}`;
-
-  return {
-    first,
-    last,
-    next,
-    prev,
-  };
-}
-
-/**
  * Throw a 404 error for no model found with an ID
  *
  * @param {Express.Request} req The Express Request object
@@ -615,27 +476,4 @@ function throwNoModelTypeFoundWithId(req: Request, res: Response, modelType: str
       new NotFoundError(`No ${modelType} found with the id of ${req.params.id}`),
     ],
   });
-}
-
-/**
- * Takes an array of Sequelize models and returns it without any duplicate
- * models
- *
- * @param {Sequelize.Model[]}
- * @return {Sequelize.Model[]}
- */
-function getUniqueModelArray(modelArray: any[]): any[] {
-  const includedKeys = Object.create(null);
-  const uniqueModelArray = [];
-
-  modelArray.forEach((model) => {
-    const guid = model.name + '_' + model.id;
-
-    if (!(guid in includedKeys)) {
-      includedKeys[guid] = true;
-      uniqueModelArray.push(model);
-    }
-  });
-
-  return uniqueModelArray;
 }

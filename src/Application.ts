@@ -11,7 +11,8 @@ import InternalServerError from './jsonapi/errors/InternalServerError';
 import notFoundHandler from './jsonapi/middleware/not-found-handler';
 import JsonApiMiddlewareValidateContentType from './jsonapi/middleware/validate-content-type';
 import JsonApiMiddlewareValidateRequestBody from './jsonapi/middleware/validate-request-body';
-import Route from './route/route';
+import Serializer from './jsonapi/Serializer';
+import Resource from './resource/resource';
 
 /**
  * Express middleware to log errors to stderr
@@ -194,9 +195,14 @@ export default class Application {
         this.configureJsonApiMiddlewares();
 
         this.models.forEach((model: Sequelize.Model<any, any>) => {
-            const route = new Route(this.expressApp, model, Controller);
+            const resource = new Resource(
+                this.expressApp,
+                model,
+                Controller,
+                new Serializer(model),
+            );
 
-            route.initialize();
+            resource.initialize();
         });
     }
 
