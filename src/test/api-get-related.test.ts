@@ -37,6 +37,27 @@ Object.keys(models).forEach((modelName) => {
     Object.keys(model.associations).forEach((associationName) => {
 
       describe(`GET /api/${model.getType()}/:id/${associationName}`, () => {
+        if (!(model.associations[associationName].isMultiAssociation)) {
+          it('should throw 404 when visiting related url for a to-one relationship where the related object does not exist', (done) => {
+            const parentModelDef = Factory.build(modelName, {id: 1});
+
+            model.create(parentModelDef).then((parentModelInstance) => {
+              const assocUnderTest = model.associations[associationName];
+
+              parentModelInstance[assocUnderTest.accessors.get]().then(() => {
+                chai.request(server.app)
+                  .get(`/api/${model.getType()}/1/${associationName}`)
+                  .set('Content-Type', 'application/vnd.api+json')
+                  .end((err, res) => {
+                    res.should.have.status(404);
+
+                    done();
+                  });
+              });
+            });
+          });
+        }
+
         it('should fetch the correct related objects', (done) => {
           const parentModelDef = Factory.build(modelName, {id: 1});
 

@@ -185,23 +185,26 @@ export default class Resource {
 
       request.validate().then((sequelizeQueryParams) => {
         parentModel[accessorMethodName](sequelizeQueryParams).then((relatedModels) => {
-          let json = {};
-
           if (association.isMultiAssociation) {
-            json = this.serializer.buildMultiRelatedResponse(
+            // Prepare a request for a to-many related model
+            this.handleRelatedRequestToManyResults(
+              res,
+              relatedPathSegment,
+              parentModel,
+              relatedModels,
+            );
+          } else if (!!relatedModels) {
+            // Prepare a resopnse for a to-one related model
+            this.handleRelatedRequestToOneResult(
+              res,
               relatedPathSegment,
               parentModel,
               relatedModels,
             );
           } else {
-            json = this.serializer.buildSingleRelatedResponse(
-              relatedPathSegment,
-              parentModel,
-              relatedModels,
-            );
+            // Throw a 404 if no to-one related model is found for this relationship
+            NotFoundHandler(req, res, next);
           }
-
-          res.json(json);
         }).catch((err) => {
           next(err);
         });
@@ -211,6 +214,54 @@ export default class Resource {
         });
       });
     });
+  }
+
+  /**
+   * Create the JSON response for a related request for a to-many relationship
+   *
+   * @method handleRelatedRequestToManyResults
+   * @param {Express.Response} res The Express response
+   * @param {String} relatedPathSegment The URL path segment for the relationship
+   * @param {Sequelize.Instance} parentModel The parent Sequelize model instance
+   * @param {Sequelize.Instance[]} relatedModels The related Sequelize model instances
+   */
+  private handleRelatedRequestToManyResults(
+    res: Response,
+    relatedPathSegment: string,
+    parentModel: Instance<any, any>,
+    relatedModels: Array<Instance<any, any>>,
+  ): void {
+    const json = this.serializer.buildMultiRelatedResponse(
+      relatedPathSegment,
+      parentModel,
+      relatedModels,
+    );
+
+    res.json(json);
+  }
+
+  /**
+   * Create the JSON response for a related request for a to-one relationship
+   *
+   * @method handleRelatedRequestToOneResult
+   * @param {Express.Response} res The Express response
+   * @param {String} relatedPathSegment The URL path segment for the relationship
+   * @param {Sequelize.Instance} parentModel The parent Sequelize model instance
+   * @param {Sequelize.Instance} relatedModel The related Sequelize model instance
+   */
+  private handleRelatedRequestToOneResult(
+    res: Response,
+    relatedPathSegment: string,
+    parentModel: Instance<any, any>,
+    relatedModel: Instance<any, any>,
+  ): void {
+    const json = this.serializer.buildSingleRelatedResponse(
+      relatedPathSegment,
+      parentModel,
+      relatedModel,
+    );
+
+    res.json(json);
   }
 
   /**
