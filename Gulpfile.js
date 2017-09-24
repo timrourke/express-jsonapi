@@ -5,15 +5,6 @@ const notify     = require('gulp-notify');
 const sourcemaps = require('gulp-sourcemaps');
 const ts         = require('gulp-typescript');
 
-const tsOptions = {
-  module: "commonjs",
-  target: "es6",
-  sourceMap: true,
-  lib: [
-    'es6',
-  ],
-};
-
 function compileTypescript() {
   console.log('Compiling typescript');
 
