@@ -207,4 +207,180 @@ describe('jsonapi/Serializer', () => {
       ));
     });
   });
+
+  describe('#buildMultiRelatedResponse', () => {
+    it('should serialize a related request for a to-many relationship', () => {
+      const parentModel = defineMockModel('baz', {
+        cats: 8,
+        dogs: 4,
+        id: 92,
+      });
+
+      const parentInstance = defineMockInstanceFromModel(parentModel);
+
+      const relatedModel = defineMockModel('foo', {
+        email: 'fred.jones@example.com',
+        id: 5,
+        name: 'Fred Jones',
+      });
+
+      const relatedInstances: Array<Instance<any, any>> = [
+        defineMockInstanceFromModel(relatedModel, {
+          email: 'guy1@example.com',
+          id: 1,
+          name: 'Guy One',
+        }),
+        defineMockInstanceFromModel(relatedModel, {
+          email: 'guy2@example.com',
+          id: 2,
+          name: 'Guy Two',
+        }),
+        defineMockInstanceFromModel(relatedModel, {
+          email: 'guy3@example.com',
+          id: 3,
+          name: 'Guy Three',
+        }),
+      ];
+
+      const serializer = new Serializer(relatedModel);
+
+      // Set each instance's associations to be empty
+      relatedInstances.forEach((m: Instance<any, any>) => m.Model.associations = []);
+
+      const actual = JSON.parse(
+        JSON.stringify(serializer.buildMultiRelatedResponse(
+          'bazzes',
+          parentInstance,
+          relatedInstances,
+        ))
+      );
+
+      actual.should.be.eql(JSON.parse(
+        JSON.stringify({
+          data: [{
+            attributes: {
+              email: 'guy1@example.com',
+              name: 'Guy One',
+            },
+            id: '1',
+            type: 'foo',
+          },
+          {
+            attributes: {
+              email: 'guy2@example.com',
+              name: 'Guy Two',
+            },
+            id: '2',
+            type: 'foo',
+          },
+          {
+            attributes: {
+              email: 'guy3@example.com',
+              name: 'Guy Three',
+            },
+            id: '3',
+            type: 'foo',
+          }],
+          links: {
+            self: 'http://localhost:3000/api/foo/92/bazzes',
+          },
+        }),
+      ));
+    });
+  });
+
+  describe('#buildRelationshipObjectsSingleResponse', () => {
+    it('should serialize a relationship objects request for a to-one relationship', () => {
+      const parentModel = defineMockModel('foo', {
+        id: 5,
+      });
+
+      const relatedModel = defineMockModel('bar', {
+        id: 26,
+      });
+
+      const serializer = new Serializer(parentModel);
+
+      const parentInstance = defineMockInstanceFromModel(parentModel);
+
+      const relatedInstance = defineMockInstanceFromModel(relatedModel);
+
+      const actual = JSON.parse(
+        JSON.stringify(serializer.buildRelationshipObjectsSingleResponse('bar', parentInstance, relatedInstance)),
+      );
+
+      actual.should.be.eql(JSON.parse(
+        JSON.stringify({
+          data: {
+            id: '26',
+            type: 'bar',
+          },
+          links: {
+            related: 'http://localhost:3000/api/foo/5/bar',
+            self: 'http://localhost:3000/api/foo/5/relationships/bar',
+          },
+        }),
+      ));
+    });
+  });
+
+  describe('#buildRelationshipObjectsMultiResponse', () => {
+    it('should serialize a relationship objects request for a to-many relationship', () => {
+      const parentModel = defineMockModel('baz', {
+        id: 92,
+      });
+
+      const parentInstance = defineMockInstanceFromModel(parentModel);
+
+      const relatedModel = defineMockModel('foo', {
+        id: 5,
+      });
+
+      const relatedInstances: Array<Instance<any, any>> = [
+        defineMockInstanceFromModel(relatedModel, {
+          id: 1,
+        }),
+        defineMockInstanceFromModel(relatedModel, {
+          id: 2,
+        }),
+        defineMockInstanceFromModel(relatedModel, {
+          id: 3,
+        }),
+      ];
+
+      const serializer = new Serializer(relatedModel);
+
+      // Set each instance's associations to be empty
+      relatedInstances.forEach((m: Instance<any, any>) => m.Model.associations = []);
+
+      const actual = JSON.parse(
+        JSON.stringify(serializer.buildRelationshipObjectsMultiResponse(
+          'bazzes',
+          parentInstance,
+          relatedInstances,
+        )),
+      );
+
+      actual.should.be.eql(JSON.parse(
+        JSON.stringify({
+          data: [{
+            id: '1',
+            type: 'foo',
+          },
+          {
+            id: '2',
+            type: 'foo',
+          },
+          {
+            id: '3',
+            type: 'foo',
+          }],
+          links: {
+            related: 'http://localhost:3000/api/foo/92/bazzes',
+            self: 'http://localhost:3000/api/foo/92/relationships/bazzes',
+          },
+        }),
+      ));
+    });
+  });
 });
