@@ -12,7 +12,7 @@ import notFoundHandler from './jsonapi/middleware/not-found-handler';
 import JsonApiMiddlewareValidateContentType from './jsonapi/middleware/validate-content-type';
 import JsonApiMiddlewareValidateRequestBody from './jsonapi/middleware/validate-request-body';
 import Serializer from './jsonapi/Serializer';
-import Resource from './resource/resource';
+import Resource from './resource/Resource';
 
 /**
  * Express middleware to log errors to stderr
