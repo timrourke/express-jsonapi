@@ -252,7 +252,7 @@ describe('jsonapi/Serializer', () => {
           'bazzes',
           parentInstance,
           relatedInstances,
-        ))
+        )),
       );
 
       actual.should.be.eql(JSON.parse(
