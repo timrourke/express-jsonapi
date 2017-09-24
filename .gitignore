@@ -44,3 +44,7 @@ jspm_packages
 
 # Editor configs
 .vscode
+
+# Documentation
+docs
+
