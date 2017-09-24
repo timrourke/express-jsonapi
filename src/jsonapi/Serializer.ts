@@ -209,8 +209,6 @@ export default class Serializer {
       },
     };
 
-    serializeIncludesForJson(relatedModel, json);
-
     return json;
   }
 
