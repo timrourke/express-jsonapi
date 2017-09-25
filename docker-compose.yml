@@ -17,3 +17,9 @@ services:
       MYSQL_USER: dev
       MYSQL_PASSWORD: 123456
       MYSQL_DATABASE: jsonapi
+    volumes:
+      - json_api_mysql_data:/var/lib/mysql
+
+volumes:
+  json_api_mysql_data:
+    driver: 'local'
